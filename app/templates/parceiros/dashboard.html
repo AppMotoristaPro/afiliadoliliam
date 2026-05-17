@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Meu Painel | Resultados{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <header class="dashboard-header">
+        <h2>Resumo de Resultados</h2>
+        <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair do Sistema</a>
+    </header>
+
+    <!-- Grid de Saldo -->
+    <div class="stats-grid mt-4">
+        <div class="glass-card stat-card">
+            <span class="stat-label">Saldo Liberado</span>
+            <h3 class="stat-value text-green">R$ {{ "%.2f"|format(saldo_pago) }}</h3>
+        </div>
+        <div class="glass-card stat-card">
+            <span class="stat-label">Saldo Pendente</span>
+            <h3 class="stat-value text-gray">R$ {{ "%.2f"|format(saldo_pendente) }}</h3>
+        </div>
+    </div>
+
+    <!-- Área do Link -->
+    <div class="glass-card full-width mt-4">
+        <h3>Seu Link de Indicação</h3>
+        <div class="link-box">
+            <input type="text" readonly value="www.lojadacliente.com.br/?utm_campaign={{ config.codigo_utm }}" id="utmLink" class="clean-input link-input">
+            <button class="btn-primary copy-btn" onclick="copyLink()">Copiar Link</button>
+        </div>
+    </div>
+
+    <!-- Tabela de Vendas -->
+    <div class="glass-card full-width mt-4">
+        <h3>Histórico de Vendas</h3>
+        <div class="table-responsive">
+            <table class="clean-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>ID do Pedido</th>
+                        <th>Valor da Venda</th>
+                        <th>Sua Comissão</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ venda.pedido_id_nuvemshop }}</td>
+                        <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                        <td><strong>R$ {{ "%.2f"|format(venda.valor_comissao) }}</strong></td>
+                        <td><span class="badge {{ venda.status_pagamento }}">{{ venda.status_pagamento | capitalize }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center empty-state">Nenhuma venda registrada até o momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script simples para copiar o link com um clique
+function copyLink() {
+    var copyText = document.getElementById("utmLink");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* Para dispositivos móveis */
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        alert("Link copiado para a área de transferência!");
+    });
+}
+</script>
+{% endblock %}
+

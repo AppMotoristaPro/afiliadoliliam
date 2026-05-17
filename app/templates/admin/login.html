@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Acesso ao Sistema{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <!-- O card central com efeito de vidro (glassmorphism) -->
+    <div class="glass-card login-card">
+        <h2 class="form-title">Acesso Seguro</h2>
+        <p class="form-subtitle">Insira suas credenciais para acessar o painel.</p>
+        
+        <form method="POST" action="{{ url_for('admin.login') }}" class="clean-form">
+            <div class="form-group">
+                <label for="email">E-mail Corporativo</label>
+                <input type="email" id="email" name="email" required placeholder="seu@email.com" class="clean-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required placeholder="••••••••" class="clean-input">
+            </div>
+            
+            <button type="submit" class="btn-primary">Entrar no Sistema</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
