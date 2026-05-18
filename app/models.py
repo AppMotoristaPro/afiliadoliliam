@@ -51,6 +51,16 @@ class Venda(db.Model):
     status_pagamento = db.Column(db.String(20), default='pendente')
     parceiro = db.relationship('ParceiroConfig', backref=db.backref('vendas', lazy=True))
 
+class Saque(db.Model):
+    __tablename__ = 'saques'
+    id = db.Column(db.Integer, primary_key=True)
+    parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
+    valor = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='pendente')
+    data_solicitacao = db.Column(db.DateTime, default=fuso_sao_paulo)
+    data_pagamento = db.Column(db.DateTime, nullable=True)
+    parceiro = db.relationship('ParceiroConfig', backref=db.backref('saques', lazy=True))
+
 class LojaConfig(db.Model):
     __tablename__ = 'loja_config'
     id = db.Column(db.Integer, primary_key=True)
