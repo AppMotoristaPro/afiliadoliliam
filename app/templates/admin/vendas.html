@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Histórico de Vendas | Ellic{% endblock %}
+{% block content %}
+<div class="mb-8 border-l-4 border-gold pl-4">
+    <h1 class="text-3xl font-bold text-navy">Histórico Global de Vendas</h1>
+    <p class="text-gray-500 text-sm mt-1">Acompanhamento completo de todas as conversões geradas pelos afiliados.</p>
+</div>
+
+<div class="glass-panel rounded-2xl shadow-sm overflow-hidden border-t-4 border-navy">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-100 text-navy text-xs uppercase tracking-widest border-b border-gray-200">
+                    <th class="p-4 font-bold">Data</th>
+                    <th class="p-4 font-bold">Afiliado Responsável</th>
+                    <th class="p-4 font-bold">Pedido</th>
+                    <th class="p-4 font-bold">Produtos</th>
+                    <th class="p-4 font-bold">Valor da Venda</th>
+                    <th class="p-4 font-bold text-right">Comissão</th>
+                    <th class="p-4 font-bold text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm">
+                {% for venda in vendas %}
+                <tr class="border-b hover:bg-gray-50 transition">
+                    <td class="p-4 whitespace-nowrap">{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
+                    <td class="p-4 font-bold text-navy">{{ venda.parceiro.nome }}</td>
+                    <td class="p-4 font-mono text-xs text-gray-500">{{ venda.pedido_id_nuvemshop }}</td>
+                    <td class="p-4 italic text-gray-500 truncate max-w-[200px]" title="{{ venda.produtos_resumo }}">{{ venda.produtos_resumo }}</td>
+                    <td class="p-4 font-medium">R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                    <td class="p-4 text-right font-extrabold text-gold text-base">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
+                    <td class="p-4 text-center">
+                        {% if venda.status_pagamento == 'pago' %}
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border border-green-200">Liquidadas</span>
+                        {% else %}
+                        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border border-amber-200">Pendentes</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="p-10 text-center text-gray-400 italic">Nenhuma venda registrada no sistema até o momento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

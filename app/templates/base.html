@@ -15,7 +15,6 @@
     </script>
     <style>
         .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        /* Esconde a barra de rolagem nativa, mas permite deslizar os menus no celular */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -27,11 +26,12 @@
             <div class="flex justify-between h-16 items-center">
                 <a href="#" class="text-2xl font-bold text-gold tracking-widest uppercase flex-shrink-0">ELLIC</a>
                 
-                <!-- Menu de Navegação (Agora rolável no mobile para não cortar itens) -->
+                <!-- Menu de Navegação -->
                 <div class="flex space-x-6 items-center text-sm font-medium overflow-x-auto hide-scrollbar pl-4 w-full justify-end">
                     {% if current_user.role == 'admin' %}
                     <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Geral</a>
                     <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition whitespace-nowrap">Afiliados</a>
+                    <a href="{{ url_for('admin.vendas') }}" class="text-white hover:text-gold transition whitespace-nowrap">Vendas</a>
                     <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition whitespace-nowrap">Financeiro</a>
                     {% else %}
                     <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Estratégica</a>

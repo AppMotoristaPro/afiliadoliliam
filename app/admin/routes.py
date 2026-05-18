@@ -26,11 +26,10 @@ def login():
         
     return render_template('admin/login.html')
 
-# ESSA É A ROTA QUE HAVIA SIDO CORTADA POR ACIDENTE
 @admin_bp.route('/nova-senha', methods=['GET', 'POST'])
 @login_required
 def nova_senha():
-    if not current_user.senha_temporaria: 
+    if not getattr(current_user, 'senha_temporaria', False): 
         return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
         
     if request.method == 'POST':
@@ -138,6 +137,18 @@ def editar_afiliado(id):
     db.session.commit()
     return redirect(url_for('admin.afiliados'))
 
+# ----- NOVA ROTA: HISTÓRICO GLOBAL DE VENDAS -----
+@admin_bp.route('/vendas')
+@login_required
+def vendas():
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
+    # Puxa todas as vendas já realizadas no sistema, da mais recente para a mais antiga
+    todas_vendas = Venda.query.order_by(Venda.data_venda.desc()).all()
+    return render_template('admin/vendas.html', vendas=todas_vendas)
+# --------------------------------------------------
+
 @admin_bp.route('/financeiro')
 @login_required
 def financeiro():
@@ -152,7 +163,6 @@ def financeiro():
         dados[v.parceiro_id]['total_venda'] += v.valor_total
         dados[v.parceiro_id]['total_comissao'] += v.valor_comissao
         
-        # Converte para JSON para o Javascript do Modal ler sem erro 500
         dados[v.parceiro_id]['extrato'].append({
             'data_venda': v.data_venda.strftime('%Y-%m-%dT%H:%M:%S'),
             'pedido_id_nuvemshop': v.pedido_id_nuvemshop,
