@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from ..models import Usuario, ParceiroConfig, Venda
 from ..extensions import db
 import random
+import string
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -63,7 +64,18 @@ def dashboard():
     if current_user.role != 'admin':
         return redirect(url_for('parceiros.dashboard'))
         
-    parceiros = ParceiroConfig.query.all()
+    # Sistema de Filtros Inteligentes
+    busca = request.args.get('busca', '').strip()
+    
+    if busca:
+        parceiros = ParceiroConfig.query.join(Usuario).filter(
+            (ParceiroConfig.nome.ilike(f'%{busca}%')) | 
+            (ParceiroConfig.codigo_utm.ilike(f'%{busca}%')) |
+            (Usuario.email.ilike(f'%{busca}%'))
+        ).all()
+    else:
+        parceiros = ParceiroConfig.query.all()
+        
     vendas_totais = Venda.query.order_by(Venda.data_venda.desc()).all()
     
     faturamento_total_parceiros = sum(v.valor_total for v in vendas_totais)
@@ -75,7 +87,8 @@ def dashboard():
                            vendas=vendas_totais,
                            faturamento_total=faturamento_total_parceiros,
                            comissoes_totais=comissoes_totais_geradas,
-                           total_parceiros=total_parceiros)
+                           total_parceiros=total_parceiros,
+                           termo_busca=busca)
 
 @admin_bp.route('/parceiro/novo', methods=['POST'])
 @login_required
@@ -112,5 +125,52 @@ def novo_parceiro():
     db.session.commit()
     
     flash(f'Parceiro {nome} criado com sucesso! Link gerado: {codigo_random}')
+    return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/parceiro/<int:id>/editar', methods=['POST'])
+@login_required
+def editar_parceiro(id):
+    if current_user.role != 'admin':
+        return redirect(url_for('parceiros.dashboard'))
+        
+    parceiro = ParceiroConfig.query.get_or_404(id)
+    
+    novo_email = request.form.get('email')
+    
+    # Verifica se o email foi alterado e se não conflita com outro usuário
+    if novo_email != parceiro.usuario.email:
+        if Usuario.query.filter_by(email=novo_email).first():
+            flash('Erro: O novo e-mail informado já está sendo usado por outro cadastro.')
+            return redirect(url_for('admin.dashboard'))
+        parceiro.usuario.email = novo_email
+
+    parceiro.nome = request.form.get('nome')
+    parceiro.taxa_comissao = float(request.form.get('taxa'))
+    parceiro.chave_pix = request.form.get('chave_pix')
+    
+    db.session.commit()
+    flash(f'Dados do parceiro {parceiro.nome} atualizados com sucesso.')
+    
+    return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/parceiro/<int:id>/resetar-senha', methods=['POST'])
+@login_required
+def resetar_senha(id):
+    if current_user.role != 'admin':
+        return redirect(url_for('parceiros.dashboard'))
+        
+    parceiro = ParceiroConfig.query.get_or_404(id)
+    
+    # Gera uma senha segura de 8 caracteres
+    nova_senha_temp = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    
+    parceiro.usuario.set_senha(nova_senha_temp)
+    parceiro.usuario.senha_temporaria = True
+    
+    db.session.commit()
+    
+    # A mensagem flash carrega a senha na tela para a dona da loja copiar e enviar
+    flash(f'Senha de {parceiro.nome} resetada! Nova senha temporária: {nova_senha_temp}')
+    
     return redirect(url_for('admin.dashboard'))
 

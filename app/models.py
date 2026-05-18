@@ -1,7 +1,11 @@
 from .extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Define o Fuso Horário de São Paulo (UTC-3)
+def fuso_sao_paulo():
+    return datetime.now(timezone(timedelta(hours=-3)))
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
@@ -10,7 +14,7 @@ class Usuario(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False) # 'admin' ou 'parceiro'
-    senha_temporaria = db.Column(db.Boolean, default=False, nullable=False) # True exige troca de senha
+    senha_temporaria = db.Column(db.Boolean, default=False, nullable=False)
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
@@ -38,7 +42,9 @@ class Venda(db.Model):
     pedido_id_nuvemshop = db.Column(db.String(100), unique=True, nullable=False)
     valor_total = db.Column(db.Float, nullable=False)
     valor_comissao = db.Column(db.Float, nullable=False)
-    data_venda = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Aplica a função do fuso horário na data da venda
+    data_venda = db.Column(db.DateTime, default=fuso_sao_paulo)
     status_pagamento = db.Column(db.String(20), default='pendente')
 
     parceiro = db.relationship('ParceiroConfig', backref=db.backref('vendas', lazy=True))

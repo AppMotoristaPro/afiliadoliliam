@@ -3,6 +3,51 @@
 {% block title %}Painel Administrativo | Parceirando Style{% endblock %}
 
 {% block content %}
+<style>
+    /* Estilos Adicionais para Modais e Filtros */
+    .search-bar-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .modal-content {
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-close {
+        background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;
+    }
+
+    .flash-alert {
+        background: #dbeafe; color: #1e40af; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;
+        border: 1px solid #bfdbfe; font-weight: 500;
+    }
+</style>
+
 <div class="dashboard-wrapper">
     <header class="dashboard-header">
         <div>
@@ -13,6 +58,14 @@
             <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair</a>
         </div>
     </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash-alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
     <div class="stats-grid">
         <div class="glass-card stat-card">
@@ -29,7 +82,7 @@
         </div>
     </div>
     
-    <!-- Formulário de Cadastro de Novo Parceiro -->
+    <!-- Novo Cadastro -->
     <div class="glass-card full-width">
         <h3 class="section-card-title">Cadastrar Novo Parceiro de Negócio</h3>
         <form action="{{ url_for('admin.novo_parceiro') }}" method="POST" class="clean-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
@@ -57,27 +110,40 @@
         </form>
     </div>
 
-    <!-- Tabela Gerencial de Parceiros -->
+    <!-- Tabela Gerencial com Filtros Inteligentes e Ações -->
     <div class="glass-card full-width">
-        <h3 class="section-card-title">Configuração de Parceiros</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 class="section-card-title" style="margin-bottom: 0;">Gestão de Parceiros</h3>
+            
+            <!-- Formulário de Filtros -->
+            <form method="GET" action="{{ url_for('admin.dashboard') }}" style="display: flex; gap: 0.5rem; max-width: 400px;">
+                <input type="text" name="busca" placeholder="Pesquisar por nome, email ou UTM..." value="{{ termo_busca }}" class="clean-input" style="padding: 0.4rem 0.8rem;">
+                <button type="submit" class="btn-action-table" style="background: #f3f4f6;">Filtrar</button>
+                {% if termo_busca %}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn-action-table" style="color: #dc2626; text-decoration: none; padding-top: 0.5rem;">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
         <div class="table-responsive">
             <table class="clean-table">
                 <thead>
                     <tr>
-                        <th>Nome do Parceiro</th>
-                        <th>Código UTM</th>
-                        <th>Taxa Padrão</th>
-                        <th>Chave PIX</th>
-                        <th>Status Inicial</th>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>UTM</th>
+                        <th>Comissão Atual</th>
+                        <th>Status</th>
+                        <th>Ações Administrativas</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for parceiro in parceiros %}
                     <tr>
                         <td><strong>{{ parceiro.nome }}</strong></td>
+                        <td>{{ parceiro.usuario.email }}</td>
                         <td><code>{{ parceiro.codigo_utm }}</code></td>
                         <td>{{ parceiro.taxa_comissao }}%</td>
-                        <td>{{ parceiro.chave_pix if parceiro.chave_pix else 'Não informada' }}</td>
                         <td>
                             {% if parceiro.usuario.senha_temporaria %}
                             <span class="badge pendente" style="background: #e0f2fe; color: #0369a1;">Senha Temporária</span>
@@ -85,10 +151,22 @@
                             <span class="badge pago">Conta Ativa</span>
                             {% endif %}
                         </td>
+                        <td style="display: flex; gap: 0.5rem;">
+                            <!-- Botão de Editar aciona o modal e passa os dados via data attributes -->
+                            <button type="button" class="btn-action-table" 
+                                    onclick="abrirModalEdicao('{{ parceiro.id }}', '{{ parceiro.nome }}', '{{ parceiro.usuario.email }}', '{{ parceiro.taxa_comissao }}', '{{ parceiro.chave_pix }}')">
+                                Editar
+                            </button>
+                            
+                            <!-- Formulário direto para resetar senha -->
+                            <form action="{{ url_for('admin.resetar_senha', id=parceiro.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja resetar a senha deste parceiro? O sistema exigirá uma nova senha no próximo login.');">
+                                <button type="submit" class="btn-action-table" style="color: #991b1b; border-color: #fca5a5;">Resetar Senha</button>
+                            </form>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="empty-state">Nenhum parceiro de negócio integrado até o momento.</td>
+                        <td colspan="6" class="empty-state">Nenhum parceiro encontrado nos filtros.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -96,16 +174,15 @@
         </div>
     </div>
 
-    <!-- NOVA TABELA DETALHADA: Visão individual das vendas de cada afiliado -->
+    <!-- Tabela Detalhada -->
     <div class="glass-card full-width">
-        <h3 class="section-card-title">Relatório Consolidado de Vendas por Afiliado</h3>
+        <h3 class="section-card-title">Relatório Consolidado de Vendas</h3>
         <div class="table-responsive">
             <table class="clean-table">
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Afiliado Responsável</th>
-                        <th>Código UTM</th>
+                        <th>Data (Fuso BR)</th>
+                        <th>Afiliado</th>
                         <th>ID Pedido Loja</th>
                         <th>Valor Bruto da Venda</th>
                         <th>Comissão do Afiliado</th>
@@ -117,7 +194,6 @@
                     <tr>
                         <td>{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td><strong>{{ venda.parceiro.nome }}</strong></td>
-                        <td><code>{{ venda.parceiro.codigo_utm }}</code></td>
                         <td>{{ venda.pedido_id_nuvemshop }}</td>
                         <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
                         <td class="text-blue" style="font-weight: 600;">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
@@ -125,7 +201,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="empty-state">Nenhuma venda registrada através de links de afiliados.</td>
+                        <td colspan="6" class="empty-state">Nenhuma venda registrada através de links de parceiros.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -133,5 +209,58 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Edição (Invisível por Padrão) -->
+<div id="modalEdicao" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="section-card-title" style="margin-bottom: 0;">Editar Parceiro</h3>
+            <button class="modal-close" onclick="fecharModal()">&times;</button>
+        </div>
+        
+        <form id="formEdicao" method="POST" class="clean-form">
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" id="editNome" name="nome" required class="clean-input">
+            </div>
+            <div class="form-group">
+                <label>E-mail de Acesso</label>
+                <input type="email" id="editEmail" name="email" required class="clean-input">
+            </div>
+            <div class="form-group">
+                <label>Nova Comissão (%) - Aplicada apenas em vendas futuras</label>
+                <input type="number" id="editTaxa" name="taxa" step="0.1" required class="clean-input">
+            </div>
+            <div class="form-group">
+                <label>Chave PIX</label>
+                <input type="text" id="editPix" name="chave_pix" class="clean-input">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="button" class="btn-action-table" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+                <button type="submit" class="btn-primary" style="flex: 1; margin: 0;">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalEdicao(id, nome, email, taxa, pix) {
+        // Preenche os dados no formulário
+        document.getElementById('editNome').value = nome;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editTaxa').value = taxa;
+        document.getElementById('editPix').value = pix !== 'None' ? pix : '';
+        
+        // Define a rota de salvamento correta
+        document.getElementById('formEdicao').action = '/admin/parceiro/' + id + '/editar';
+        
+        // Exibe o modal
+        document.getElementById('modalEdicao').style.display = 'flex';
+    }
+
+    function fecharModal() {
+        document.getElementById('modalEdicao').style.display = 'none';
+    }
+</script>
 {% endblock %}
 
