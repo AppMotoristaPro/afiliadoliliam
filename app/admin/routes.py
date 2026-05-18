@@ -11,14 +11,41 @@ admin_bp = Blueprint('admin', __name__)
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if getattr(current_user, 'senha_temporaria', False):
+            return redirect(url_for('admin.nova_senha'))
         return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
+        
     if request.method == 'POST':
         user = Usuario.query.filter_by(email=request.form.get('email')).first()
         if user and user.check_senha(request.form.get('senha')):
             login_user(user)
+            if user.senha_temporaria: 
+                return redirect(url_for('admin.nova_senha'))
             return redirect(url_for('admin.dashboard') if user.role == 'admin' else url_for('parceiros.dashboard'))
         flash('E-mail ou senha inválidos.')
+        
     return render_template('admin/login.html')
+
+# ESSA É A ROTA QUE HAVIA SIDO CORTADA POR ACIDENTE
+@admin_bp.route('/nova-senha', methods=['GET', 'POST'])
+@login_required
+def nova_senha():
+    if not current_user.senha_temporaria: 
+        return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
+        
+    if request.method == 'POST':
+        nova_senha = request.form.get('nova_senha')
+        if nova_senha != request.form.get('confirmacao'):
+            flash('As senhas não coincidem.')
+            return render_template('admin/nova_senha.html')
+            
+        current_user.set_senha(nova_senha)
+        current_user.senha_temporaria = False
+        db.session.commit()
+        flash('Senha atualizada com sucesso. Bem-vindo(a)!')
+        return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
+        
+    return render_template('admin/nova_senha.html')
 
 @admin_bp.route('/logout')
 @login_required
@@ -29,7 +56,9 @@ def logout():
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role != 'admin': return redirect(url_for('parceiros.dashboard'))
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
     dia = request.args.get('dia')
     mes = request.args.get('mes')
     
@@ -58,7 +87,9 @@ def dashboard():
 @admin_bp.route('/afiliados', methods=['GET', 'POST'])
 @login_required
 def afiliados():
-    if current_user.role != 'admin': return redirect(url_for('parceiros.dashboard'))
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
     if request.method == 'POST':
         email = request.form.get('email')
         if Usuario.query.filter_by(email=email).first():
@@ -86,9 +117,12 @@ def afiliados():
 @admin_bp.route('/afiliado/<int:id>/editar', methods=['POST'])
 @login_required
 def editar_afiliado(id):
-    if current_user.role != 'admin': return redirect(url_for('parceiros.dashboard'))
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
     parceiro = ParceiroConfig.query.get_or_404(id)
     novo_email = request.form.get('email')
+    
     if novo_email != parceiro.usuario.email and not Usuario.query.filter_by(email=novo_email).first():
         parceiro.usuario.email = novo_email
         
@@ -107,8 +141,9 @@ def editar_afiliado(id):
 @admin_bp.route('/financeiro')
 @login_required
 def financeiro():
-    if current_user.role != 'admin': return redirect(url_for('parceiros.dashboard'))
-    
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
     vendas_pendentes = Venda.query.filter_by(status_pagamento='pendente').order_by(Venda.data_venda.desc()).all()
     dados = {}
     for v in vendas_pendentes:
@@ -116,6 +151,8 @@ def financeiro():
             dados[v.parceiro_id] = {'parceiro': v.parceiro, 'total_venda': 0.0, 'total_comissao': 0.0, 'extrato': [], 'ultima_data': v.data_venda}
         dados[v.parceiro_id]['total_venda'] += v.valor_total
         dados[v.parceiro_id]['total_comissao'] += v.valor_comissao
+        
+        # Converte para JSON para o Javascript do Modal ler sem erro 500
         dados[v.parceiro_id]['extrato'].append({
             'data_venda': v.data_venda.strftime('%Y-%m-%dT%H:%M:%S'),
             'pedido_id_nuvemshop': v.pedido_id_nuvemshop,
@@ -124,15 +161,15 @@ def financeiro():
             'valor_comissao': float(v.valor_comissao)
         })
         
-    # Puxa o histórico consolidado de repasses realizados para a auditoria do Admin
     historico_pagamentos = Pagamento.query.order_by(Pagamento.data_pagamento.desc()).all()
     return render_template('admin/financeiro.html', financeiro=dados.values(), historico=historico_pagamentos)
 
 @admin_bp.route('/financeiro/<int:id>/pagar', methods=['POST'])
 @login_required
 def pagar_comissao(id):
-    if current_user.role != 'admin': return redirect(url_for('parceiros.dashboard'))
-    
+    if current_user.role != 'admin': 
+        return redirect(url_for('parceiros.dashboard'))
+        
     vendas_pendentes = Venda.query.filter_by(parceiro_id=id, status_pagamento='pendente').all()
     if not vendas_pendentes:
         flash('Nenhum valor pendente encontrado.')
@@ -141,7 +178,6 @@ def pagar_comissao(id):
     parceiro = ParceiroConfig.query.get_or_404(id)
     total_comissao = sum(v.valor_comissao for v in vendas_pendentes)
     
-    # 1. Registra o Log de Pagamento com a Chave PIX exata do momento
     recibo = Pagamento(
         parceiro_id=parceiro.id,
         valor_pago=total_comissao,
@@ -149,7 +185,6 @@ def pagar_comissao(id):
     )
     db.session.add(recibo)
     
-    # 2. Modifica as vendas para o status de Pago, limpando o extrato corrente
     for v in vendas_pendentes:
         v.status_pagamento = 'pago'
         
