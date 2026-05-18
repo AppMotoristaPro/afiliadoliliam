@@ -1,25 +1,23 @@
 {% extends "base.html" %}
-
-{% block title %}Atualizar Senha Obrigatória{% endblock %}
-
+{% block title %}Atualizar Credencial{% endblock %}
 {% block content %}
-<div class="login-wrapper">
-    <div class="glass-card login-card">
-        <h2 class="form-title">Primeiro Acesso</h2>
-        <p class="form-subtitle">Sua senha atual é temporária. Defina uma senha definitiva para continuar.</p>
+<div class="min-h-[75vh] flex items-center justify-center">
+    <div class="glass-panel p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-gold bg-white">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-navy tracking-widest uppercase">Segurança Ellic</h2>
+            <p class="text-gray-500 mt-2 text-sm font-medium">Por motivos de segurança, você precisa criar uma nova senha definitiva para acessar seu painel.</p>
+        </div>
         
-        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="clean-form">
-            <div class="form-group">
-                <label for="nova_senha">Nova Senha</label>
-                <input type="password" id="nova_senha" name="nova_senha" required placeholder="••••••••" class="clean-input">
+        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1">Nova Senha</label>
+                <input type="password" name="nova_senha" required class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold outline-none transition shadow-inner">
             </div>
-            
-            <div class="form-group">
-                <label for="confirmacao">Confirme a Nova Senha</label>
-                <input type="password" id="confirmacao" name="confirmacao" required placeholder="••••••••" class="clean-input">
+            <div>
+                <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1">Confirme a Nova Senha</label>
+                <input type="password" name="confirmacao" required class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold outline-none transition shadow-inner">
             </div>
-            
-            <button type="submit" class="btn-primary">Salvar Nova Senha</button>
+            <button type="submit" class="w-full bg-navy hover:bg-navy-light text-white font-bold py-3 rounded-lg shadow-lg transition tracking-wide mt-4">SALVAR E ACESSAR</button>
         </form>
     </div>
 </div>

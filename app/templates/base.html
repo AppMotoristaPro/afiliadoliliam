@@ -15,6 +15,9 @@
     </script>
     <style>
         .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        /* Esconde a barra de rolagem nativa, mas permite deslizar os menus no celular */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 font-sans tracking-wide">
@@ -22,25 +25,28 @@
     <nav class="bg-navy shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <a href="#" class="text-2xl font-bold text-gold tracking-widest uppercase">ELLIC</a>
-                <div class="flex space-x-8 items-center text-sm font-medium">
+                <a href="#" class="text-2xl font-bold text-gold tracking-widest uppercase flex-shrink-0">ELLIC</a>
+                
+                <!-- Menu de Navegação (Agora rolável no mobile para não cortar itens) -->
+                <div class="flex space-x-6 items-center text-sm font-medium overflow-x-auto hide-scrollbar pl-4 w-full justify-end">
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition">Visão Geral</a>
-                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition">Sócios</a>
-                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition">Financeiro</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Geral</a>
+                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition whitespace-nowrap">Afiliados</a>
+                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition whitespace-nowrap">Financeiro</a>
                     {% else %}
-                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Dashboard</a>
-                    <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition">Meus Links</a>
-                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Extrato de Vendas</a>
-                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition">Recebimentos</a>
+                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Estratégica</a>
+                    <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition whitespace-nowrap">Gerador de Links</a>
+                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition whitespace-nowrap">Extrato de Vendas</a>
+                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition whitespace-nowrap">Recebimentos</a>
                     {% endif %}
-                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded transition">Sair</a>
+                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded transition whitespace-nowrap ml-2">Sair</a>
                 </div>
             </div>
         </div>
     </nav>
     {% endif %}
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 overflow-x-hidden">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="bg-navy/10 border-l-4 border-navy text-navy p-4 mb-6 rounded shadow-sm">

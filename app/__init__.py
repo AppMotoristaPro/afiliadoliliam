@@ -1,23 +1,20 @@
-from flask import Flask
+from flask import Flask, request, redirect, url_for
 from .extensions import db
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 import os
 
 def create_app():
     app = Flask(__name__)
     
-    # Configurações de Segurança e Banco de Dados
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'chave-secreta-ellic-producao')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    # SOLUÇÃO DO ERRO SSL NEON: Força o Flask a testar a conexão antes de executar comandos
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
     }
 
-    # Inicializa os plugins
     db.init_app(app)
     
     login_manager = LoginManager()
@@ -29,7 +26,14 @@ def create_app():
         from .models import Usuario
         return Usuario.query.get(int(user_id))
 
-    # Registra as Rotas (Blueprints)
+    # TRAVA GLOBAL: Obriga a troca da senha temporária antes de liberar a plataforma
+    @app.before_request
+    def check_senha_temporaria():
+        if current_user.is_authenticated and getattr(current_user, 'senha_temporaria', False):
+            # Deixa passar apenas a tela de nova senha, o logout e o carregamento do CSS/imagens
+            if request.endpoint not in ['admin.nova_senha', 'admin.logout', 'static']:
+                return redirect(url_for('admin.nova_senha'))
+
     from .admin.routes import admin_bp
     from .parceiros.routes import parceiros_bp
     from .webhook.routes import webhook_bp
@@ -38,15 +42,10 @@ def create_app():
     app.register_blueprint(parceiros_bp, url_prefix='/parceiros')
     app.register_blueprint(webhook_bp, url_prefix='/api/webhook')
 
-    # Configuração de Banco de Dados Automática
     with app.app_context():
-        # Recria as tabelas limpas no Neon
         db.create_all()
-        
-        # Garante a recriação do Administrador caso o banco tenha sido resetado
         from .models import Usuario
         admin_existente = Usuario.query.filter_by(email='admin@ellic.com.br').first()
-        
         if not admin_existente:
             novo_admin = Usuario(
                 email='admin@ellic.com.br',
