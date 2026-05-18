@@ -14,7 +14,6 @@
         </div>
     </header>
 
-    <!-- Cards de Desempenho Global da Loja -->
     <div class="stats-grid">
         <div class="glass-card stat-card">
             <span class="stat-label">Faturamento via Parceiros</span>
@@ -30,18 +29,46 @@
         </div>
     </div>
     
-    <!-- Tabela Gerencial -->
+    <!-- Formulário de Cadastro de Novo Parceiro -->
     <div class="glass-card full-width">
-        <h3 class="section-card-title">Configuração de Parceiros de Negócios</h3>
+        <h3 class="section-card-title">Cadastrar Novo Parceiro de Negócio</h3>
+        <form action="{{ url_for('admin.novo_parceiro') }}" method="POST" class="clean-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" required placeholder="Nome do Afiliado" class="clean-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>E-mail de Acesso</label>
+                <input type="email" name="email" required placeholder="parceiro@email.com" class="clean-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Senha Temporária</label>
+                <input type="text" name="senha_temporaria" required placeholder="Ex: Mud@r123" class="clean-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Comissão (%)</label>
+                <input type="number" name="taxa" step="0.1" value="10.0" required class="clean-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Chave PIX</label>
+                <input type="text" name="chave_pix" placeholder="CPF, Celular ou E-mail" class="clean-input">
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 0; padding: 0.75rem;">Adicionar</button>
+        </form>
+    </div>
+
+    <!-- Tabela Gerencial de Parceiros -->
+    <div class="glass-card full-width">
+        <h3 class="section-card-title">Configuração de Parceiros</h3>
         <div class="table-responsive">
             <table class="clean-table">
                 <thead>
                     <tr>
                         <th>Nome do Parceiro</th>
-                        <th>Código Rastreio (UTM)</th>
-                        <th>Porcentagem de Comissão</th>
-                        <th>Chave PIX cadastrada</th>
-                        <th>Ações de Usabilidade</th>
+                        <th>Código UTM</th>
+                        <th>Taxa Padrão</th>
+                        <th>Chave PIX</th>
+                        <th>Status Inicial</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,12 +79,53 @@
                         <td>{{ parceiro.taxa_comissao }}%</td>
                         <td>{{ parceiro.chave_pix if parceiro.chave_pix else 'Não informada' }}</td>
                         <td>
-                            <button class="btn-action-table" onclick="alert('Funcionalidade visual: Modal de ajuste de taxa abrirá aqui.')">Ajustar Comissão</button>
+                            {% if parceiro.usuario.senha_temporaria %}
+                            <span class="badge pendente" style="background: #e0f2fe; color: #0369a1;">Senha Temporária</span>
+                            {% else %}
+                            <span class="badge pago">Conta Ativa</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
                         <td colspan="5" class="empty-state">Nenhum parceiro de negócio integrado até o momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- NOVA TABELA DETALHADA: Visão individual das vendas de cada afiliado -->
+    <div class="glass-card full-width">
+        <h3 class="section-card-title">Relatório Consolidado de Vendas por Afiliado</h3>
+        <div class="table-responsive">
+            <table class="clean-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Afiliado Responsável</th>
+                        <th>Código UTM</th>
+                        <th>ID Pedido Loja</th>
+                        <th>Valor Bruto da Venda</th>
+                        <th>Comissão do Afiliado</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><strong>{{ venda.parceiro.nome }}</strong></td>
+                        <td><code>{{ venda.parceiro.codigo_utm }}</code></td>
+                        <td>{{ venda.pedido_id_nuvemshop }}</td>
+                        <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                        <td class="text-blue" style="font-weight: 600;">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
+                        <td><span class="badge {{ venda.status_pagamento }}">{{ 'Confirmado' if venda.status_pagamento == 'pago' else 'Aguardando' }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">Nenhuma venda registrada através de links de afiliados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

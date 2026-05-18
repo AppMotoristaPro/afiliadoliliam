@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Atualizar Senha Obrigatória{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="glass-card login-card">
+        <h2 class="form-title">Primeiro Acesso</h2>
+        <p class="form-subtitle">Sua senha atual é temporária. Defina uma senha definitiva para continuar.</p>
+        
+        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="clean-form">
+            <div class="form-group">
+                <label for="nova_senha">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" required placeholder="••••••••" class="clean-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmacao">Confirme a Nova Senha</label>
+                <input type="password" id="confirmacao" name="confirmacao" required placeholder="••••••••" class="clean-input">
+            </div>
+            
+            <button type="submit" class="btn-primary">Salvar Nova Senha</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
