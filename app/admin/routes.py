@@ -1,13 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from ..models import Usuario, ParceiroConfig, Venda
-from ..extensions import db
 
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # Se já estiver logado, redireciona para o painel correto
     if current_user.is_authenticated:
         if current_user.role == 'admin':
             return redirect(url_for('admin.dashboard'))
@@ -18,7 +16,6 @@ def login():
         senha = request.form.get('senha')
         user = Usuario.query.filter_by(email=email).first()
         
-        # Verifica se o usuário existe e se a senha criptografada bate
         if user and user.check_senha(senha):
             login_user(user)
             if user.role == 'admin':
@@ -39,11 +36,20 @@ def logout():
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Proteção de rota: expulsa quem não é admin
     if current_user.role != 'admin':
         return redirect(url_for('parceiros.dashboard'))
         
     parceiros = ParceiroConfig.query.all()
-    # Aqui vamos passar os dados para construir a tabela limpa no front-end
-    return render_template('admin/dashboard.html', parceiros=parceiros)
+    vendas_totais = Venda.query.all()
+    
+    # Métricas consolidadas para o topo da visão da loja
+    faturamento_total_parceiros = sum(v.valor_total for v in vendas_totais)
+    comissoes_totais_geradas = sum(v.valor_comissao for v in vendas_totais)
+    total_parceiros = len(parceiros)
+    
+    return render_template('admin/dashboard.html', 
+                           parceiros=parceiros,
+                           faturamento_total=faturamento_total_parceiros,
+                           comissoes_totais=comissoes_totais_geradas,
+                           total_parceiros=total_parceiros)
 

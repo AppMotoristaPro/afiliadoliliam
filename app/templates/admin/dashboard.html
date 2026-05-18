@@ -1,39 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}Painel Administrativo | Gestão de Parceiros{% endblock %}
+{% block title %}Painel Administrativo | Parceirando Style{% endblock %}
 
 {% block content %}
 <div class="dashboard-wrapper">
     <header class="dashboard-header">
-        <h2>Gestão de Parceiros</h2>
-        <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair do Sistema</a>
+        <div>
+            <h2>Visão Geral da Loja</h2>
+        </div>
+        <div class="user-info-meta">
+            <span class="user-email-tag">Administrador</span>
+            <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair</a>
+        </div>
     </header>
+
+    <!-- Cards de Desempenho Global da Loja -->
+    <div class="stats-grid">
+        <div class="glass-card stat-card">
+            <span class="stat-label">Faturamento via Parceiros</span>
+            <h3 class="stat-value text-blue">R$ {{ "%.2f"|format(faturamento_total) }}</h3>
+        </div>
+        <div class="glass-card stat-card">
+            <span class="stat-label">Total em Comissões</span>
+            <h3 class="stat-value text-amber">R$ {{ "%.2f"|format(comissoes_totais) }}</h3>
+        </div>
+        <div class="glass-card stat-card">
+            <span class="stat-label">Parceiros Conectados</span>
+            <h3 class="stat-value text-green">{{ total_parceiros }}</h3>
+        </div>
+    </div>
     
-    <div class="glass-card full-width mt-4">
-        <h3>Parceiros Ativos</h3>
+    <!-- Tabela Gerencial -->
+    <div class="glass-card full-width">
+        <h3 class="section-card-title">Configuração de Parceiros de Negócios</h3>
         <div class="table-responsive">
             <table class="clean-table">
                 <thead>
                     <tr>
                         <th>Nome do Parceiro</th>
-                        <th>Código UTM</th>
-                        <th>Taxa de Comissão</th>
-                        <th>Ações</th>
+                        <th>Código Rastreio (UTM)</th>
+                        <th>Porcentagem de Comissão</th>
+                        <th>Chave PIX cadastrada</th>
+                        <th>Ações de Usabilidade</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for parceiro in parceiros %}
                     <tr>
-                        <td>{{ parceiro.nome }}</td>
+                        <td><strong>{{ parceiro.nome }}</strong></td>
                         <td><code>{{ parceiro.codigo_utm }}</code></td>
                         <td>{{ parceiro.taxa_comissao }}%</td>
+                        <td>{{ parceiro.chave_pix if parceiro.chave_pix else 'Não informada' }}</td>
                         <td>
-                            <button class="btn-secondary">Editar Taxa</button>
+                            <button class="btn-action-table" onclick="alert('Funcionalidade visual: Modal de ajuste de taxa abrirá aqui.')">Ajustar Comissão</button>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="4" class="text-center empty-state">Nenhum parceiro cadastrado ainda.</td>
+                        <td colspan="5" class="empty-state">Nenhum parceiro de negócio integrado até o momento.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
