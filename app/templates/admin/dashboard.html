@@ -1,212 +1,66 @@
 {% extends "base.html" %}
-
-{% block title %}Painel de Gestão{% endblock %}
-
+{% block title %}Visão Geral{% endblock %}
 {% block content %}
-<style>
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: #fff; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .flash-alert { background: #dbeafe; color: #1e40af; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #bfdbfe; font-weight: 500; }
-</style>
-
 <div class="dashboard-wrapper">
-    <header class="dashboard-header">
-        <div>
-            <h2>Visão Geral Financeira</h2>
-        </div>
-        <div class="user-info-meta" style="gap: 1rem;">
-            <a href="{{ url_for('admin.novo_parceiro') }}" class="btn-primary" style="text-decoration: none; background: #166534;">+ Novo Parceiro</a>
-            <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair</a>
-        </div>
-    </header>
+    <div class="page-header">
+        <h2 class="page-title">Visão Geral do Programa</h2>
+    </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-          <div class="flash-alert">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <!-- Filtro de Data -->
+    <form class="filter-bar" method="GET" action="{{ url_for('admin.dashboard') }}">
+        <div class="filter-group">
+            <label>Data Início</label>
+            <input type="date" name="data_inicio" value="{{ d_inicio }}" class="clean-input">
+        </div>
+        <div class="filter-group">
+            <label>Data Fim</label>
+            <input type="date" name="data_fim" value="{{ d_fim }}" class="clean-input">
+        </div>
+        <button type="submit" class="btn-primary">Aplicar Filtro</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn-primary" style="background: var(--text-muted);">Limpar</a>
+    </form>
 
-    <!-- Indicadores -->
+    <!-- Cards Principais -->
     <div class="stats-grid">
         <div class="glass-card stat-card">
-            <span class="stat-label">Faturamento Rastreado</span>
-            <h3 class="stat-value text-blue">R$ {{ "%.2f"|format(faturamento_total) }}</h3>
+            <span class="stat-label">Volume de Vendas</span>
+            <h3 class="stat-value">R$ {{ "%.2f"|format(faturamento_total) }}</h3>
         </div>
         <div class="glass-card stat-card">
-            <span class="stat-label">Comissões Acumuladas</span>
-            <h3 class="stat-value text-amber">R$ {{ "%.2f"|format(comissoes_totais) }}</h3>
+            <span class="stat-label">Comissões Geradas</span>
+            <h3 class="stat-value text-gold">R$ {{ "%.2f"|format(comissoes_totais) }}</h3>
         </div>
         <div class="glass-card stat-card">
-            <span class="stat-label">Sócios Ativos</span>
-            <h3 class="stat-value text-green">{{ total_parceiros }}</h3>
+            <span class="stat-label">Total de Afiliados</span>
+            <h3 class="stat-value">{{ total_afiliados }}</h3>
         </div>
     </div>
 
-    <!-- Layout Dividido: Top Sócios e Regras -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-        
-        <!-- Ranking Analítico -->
-        <div class="glass-card" style="margin-bottom: 0;">
-            <h3 class="section-card-title">Ranking de Desempenho (Top Sócios)</h3>
-            <table class="clean-table">
-                <thead>
-                    <tr>
-                        <th>Parceiro</th>
-                        <th>Volume de Vendas</th>
-                        <th>Comissão Gerada</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for socio in top_socios %}
-                    <tr>
-                        <td><strong>{{ socio.nome }}</strong></td>
-                        <td>R$ {{ "%.2f"|format(socio.total_vendido) }}</td>
-                        <td class="text-blue">R$ {{ "%.2f"|format(socio.total_comissao) }}</td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="3" class="empty-state">Dados insuficientes para o ranking.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Regras de Negócio -->
-        <div class="glass-card" style="margin-bottom: 0;">
-            <h3 class="section-card-title">Regras Financeiras</h3>
-            <form action="{{ url_for('admin.salvar_configuracoes') }}" method="POST" class="clean-form">
-                <div class="form-group">
-                    <label>Prazo de Liberação (Dias)</label>
-                    <input type="number" name="dias_carencia" value="{{ config_loja.dias_carencia_comissao }}" class="clean-input">
-                </div>
-                <div class="form-group">
-                    <label>Valor Mínimo para Saque (R$)</label>
-                    <input type="number" step="0.1" name="valor_minimo" value="{{ config_loja.valor_minimo_saque }}" class="clean-input">
-                </div>
-                <button type="submit" class="btn-action-table" style="width: 100%; background: #1e3a8a; color: white;">Salvar Regras</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Central de Saques (Fluxo de Caixa) -->
-    <div class="glass-card full-width">
-        <h3 class="section-card-title" style="color: #92400e;">Solicitações de Saque Pendentes</h3>
-        <div class="table-responsive">
-            <table class="clean-table">
-                <thead>
-                    <tr>
-                        <th>Data do Pedido</th>
-                        <th>Parceiro</th>
-                        <th>Chave PIX</th>
-                        <th>Valor Solicitado</th>
-                        <th>Ação Financeira</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for saque in saques %}
-                    <tr>
-                        <td>{{ saque.data_solicitacao.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td><strong>{{ saque.parceiro.nome }}</strong></td>
-                        <td><code>{{ saque.parceiro.chave_pix }}</code></td>
-                        <td class="text-amber"><strong>R$ {{ "%.2f"|format(saque.valor) }}</strong></td>
-                        <td>
-                            <form action="{{ url_for('admin.aprovar_saque', id=saque.id) }}" method="POST" onsubmit="return confirm('Confirmar que a transferência PIX foi realizada no banco da loja?');">
-                                <button type="submit" class="btn-action-table" style="background: #dcfce7; color: #166534; border-color: #86efac;">Marcar como Pago</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="empty-state">Nenhum pedido de repasse financeiro pendente.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Gestão de Parceiros -->
-    <div class="glass-card full-width">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-            <h3 class="section-card-title" style="margin-bottom: 0;">Base de Parceiros</h3>
-            <form method="GET" action="{{ url_for('admin.dashboard') }}" style="display: flex; gap: 0.5rem; max-width: 400px;">
-                <input type="text" name="busca" placeholder="Pesquisar registro..." value="{{ termo_busca }}" class="clean-input" style="padding: 0.4rem 0.8rem;">
-                <button type="submit" class="btn-action-table" style="background: #f3f4f6;">Filtrar</button>
-                {% if termo_busca %}<a href="{{ url_for('admin.dashboard') }}" class="btn-action-table" style="color: #dc2626; text-decoration: none; padding-top: 0.5rem;">Limpar</a>{% endif %}
-            </form>
-        </div>
-        <div class="table-responsive">
-            <table class="clean-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>UTM</th>
-                        <th>Taxa</th>
-                        <th>Status</th>
-                        <th>Gestão</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for parceiro in parceiros %}
-                    <tr>
-                        <td><strong>{{ parceiro.nome }}</strong></td>
-                        <td>{{ parceiro.usuario.email }}</td>
-                        <td><code>{{ parceiro.codigo_utm }}</code></td>
-                        <td>{{ parceiro.taxa_comissao }}%</td>
-                        <td>
-                            {% if parceiro.usuario.senha_temporaria %}
-                            <span class="badge pendente" style="background: #e0f2fe; color: #0369a1;">Senha Temporária</span>
-                            {% else %}
-                            <span class="badge pago">Conta Ativa</span>
-                            {% endif %}
-                        </td>
-                        <td style="display: flex; gap: 0.5rem;">
-                            <button type="button" class="btn-action-table" onclick="abrirModalEdicao('{{ parceiro.id }}', '{{ parceiro.nome }}', '{{ parceiro.usuario.email }}', '{{ parceiro.taxa_comissao }}', '{{ parceiro.chave_pix }}')">Editar</button>
-                            <form action="{{ url_for('admin.resetar_senha', id=parceiro.id) }}" method="POST" onsubmit="return confirm('Deseja gerar nova senha provisória?');">
-                                <button type="submit" class="btn-action-table" style="color: #991b1b; border-color: #fca5a5;">Resetar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Edição -->
-<div id="modalEdicao" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="section-card-title" style="margin-bottom: 0;">Ajustar Cadastro</h3>
-            <button class="modal-close" style="border: none; background: transparent; font-size: 1.5rem;" onclick="fecharModal()">&times;</button>
-        </div>
-        <form id="formEdicao" method="POST" class="clean-form">
-            <div class="form-group"><label>Nome</label><input type="text" id="editNome" name="nome" required class="clean-input"></div>
-            <div class="form-group"><label>E-mail</label><input type="email" id="editEmail" name="email" required class="clean-input"></div>
-            <div class="form-group"><label>Taxa de Comissão (%)</label><input type="number" id="editTaxa" name="taxa" step="0.1" required class="clean-input"></div>
-            <div class="form-group"><label>Chave PIX</label><input type="text" id="editPix" name="chave_pix" class="clean-input"></div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button type="button" class="btn-action-table" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
-                <button type="submit" class="btn-primary" style="flex: 1; margin: 0;">Salvar</button>
-            </div>
-        </form>
+    <!-- Gráfico de Linhas -->
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1rem; color: var(--navy-blue);">Evolução de Vendas Diárias</h3>
+        <canvas id="graficoVendas" height="100"></canvas>
     </div>
 </div>
 
 <script>
-    function abrirModalEdicao(id, nome, email, taxa, pix) {
-        document.getElementById('editNome').value = nome;
-        document.getElementById('editEmail').value = email;
-        document.getElementById('editTaxa').value = taxa;
-        document.getElementById('editPix').value = pix !== 'None' ? pix : '';
-        document.getElementById('formEdicao').action = '/admin/parceiro/' + id + '/editar';
-        document.getElementById('modalEdicao').style.display = 'flex';
-    }
-    function fecharModal() { document.getElementById('modalEdicao').style.display = 'none'; }
+    const ctx = document.getElementById('graficoVendas').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ labels_grafico | tojson }},
+            datasets: [{
+                label: 'Volume Faturado (R$)',
+                data: {{ valores_grafico | tojson }},
+                borderColor: '#1A2E5A',
+                backgroundColor: 'rgba(26, 46, 90, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
 </script>
 {% endblock %}
 

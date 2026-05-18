@@ -1,26 +1,25 @@
 {% extends "base.html" %}
-
-{% block title %}Acesso ao Sistema{% endblock %}
-
+{% block title %}Login Administrativo{% endblock %}
 {% block content %}
-<div class="login-wrapper">
-    <!-- O card central com efeito de vidro (glassmorphism) -->
-    <div class="glass-card login-card">
-        <h2 class="form-title">Acesso Seguro</h2>
-        <p class="form-subtitle">Insira suas credenciais para acessar o painel.</p>
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-logo">ELLIC <span>Moda</span></div>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Acesso ao Painel de Afiliados</p>
         
-        <form method="POST" action="{{ url_for('admin.login') }}" class="clean-form">
-            <div class="form-group">
-                <label for="email">E-mail Corporativo</label>
-                <input type="email" id="email" name="email" required placeholder="seu@email.com" class="clean-input">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}<div style="color: red; margin-bottom: 1rem; font-size: 0.9rem;">{{ messages[0] }}</div>{% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('admin.login') }}" style="text-align: left;">
+            <div style="margin-bottom: 1rem;">
+                <label style="font-weight: 600; font-size: 0.85rem;">E-mail</label>
+                <input type="email" name="email" required class="clean-input" placeholder="admin@ellic.com.br">
             </div>
-            
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" required placeholder="••••••••" class="clean-input">
+            <div style="margin-bottom: 2rem;">
+                <label style="font-weight: 600; font-size: 0.85rem;">Senha</label>
+                <input type="password" name="senha" required class="clean-input" placeholder="••••••••">
             </div>
-            
-            <button type="submit" class="btn-primary">Entrar no Sistema</button>
+            <button type="submit" class="btn-primary" style="width: 100%;">Entrar no Sistema</button>
         </form>
     </div>
 </div>

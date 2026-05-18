@@ -1,130 +1,61 @@
 {% extends "base.html" %}
-
-{% block title %}Meu Painel | Resultados{% endblock %}
-
+{% block title %}Painel do Afiliado{% endblock %}
 {% block content %}
 <div class="dashboard-wrapper">
-    <!-- Cabeçalho de Navegação -->
-    <header class="dashboard-header">
-        <div>
-            <h2>Seu Painel de Resultados</h2>
-        </div>
-        <div class="user-info-meta">
-            <span class="user-email-tag">{{ config.nome }}</span>
-            <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair</a>
-        </div>
-    </header>
+    <div class="page-header">
+        <h2 class="page-title">Bem-vindo(a), {{ config.nome }}!</h2>
+    </div>
 
-    <!-- Separação de Carteira Financeira Estilo Parceirando -->
     <div class="stats-grid">
         <div class="glass-card stat-card">
-            <span class="stat-label">Saldo Disponível (Liberado)</span>
-            <h3 class="stat-value text-green">R$ {{ "%.2f"|format(saldo_pago) }}</h3>
+            <span class="stat-label">Comissão Disponível</span>
+            <h3 class="stat-value text-gold">R$ {{ "%.2f"|format(saldo_pago) }}</h3>
         </div>
         <div class="glass-card stat-card">
-            <span class="stat-label">Saldo Aguardando Liberação</span>
-            <h3 class="stat-value text-amber">R$ {{ "%.2f"|format(saldo_pendente) }}</h3>
+            <span class="stat-label">Vendas Aguardando Liberação</span>
+            <h3 class="stat-value">R$ {{ "%.2f"|format(saldo_pendente) }}</h3>
         </div>
     </div>
 
-    <!-- Gerador de Links Inteligente (Foco em Usabilidade e Provadores) -->
-    <div class="glass-card full-width">
-        <h3 class="link-section-title">Gerador de Links de Produtos</h3>
-        <p class="form-subtitle" style="margin-bottom: 1rem; text-align: left; font-size: 0.85rem; color: #6b7280;">
-            Vai divulgar uma roupa ou produto específico? Cole o link original da loja abaixo para gerar seu link de comissão personalizado.
-        </p>
-        
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <!-- Entrada do link do produto -->
-            <div style="display: flex; gap: 1rem;">
-                <input type="text" id="productUrl" placeholder="Cole aqui o link de qualquer produto da loja (Ex: https://www.lojadacliente.com.br/produtos/vestido-x)" class="clean-input" style="flex-grow: 1;">
-                <button class="btn-primary" onclick="generateProductLink()" style="background: #166534; margin-top: 0;">Gerar Link</button>
-            </div>
-            
-            <!-- Bloco de Resultado (Inicia oculto e aparece via JavaScript) -->
-            <div class="link-box" id="resultBox" style="display: none;">
-                <input type="text" readonly id="utmLink" class="clean-input link-input">
-                <button class="btn-primary copy-btn" onclick="copyLink()" style="margin-top: 0;">Copiar Link</button>
-            </div>
+    <!-- Ferramentas de Divulgação -->
+    <div class="glass-card">
+        <h3 style="color: var(--navy-blue); margin-bottom: 1rem;">Link Oficial da Loja</h3>
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="clean-input">
+            <button class="btn-primary btn-gold" onclick="copiarLink('linkLoja')">Copiar</button>
         </div>
-    </div>
 
-    <!-- Tabela Transparente de Extrato de Indicações -->
-    <div class="glass-card full-width">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-            <h3 class="section-card-title" style="margin-bottom: 0;">Histórico de Indicações Convertidas</h3>
-            <button class="btn-action-table" style="background: #1e3a8a; color: white; border: none;" onclick="alert('Interface Visual: Sua solicitação de resgate de saldo liberado foi enviada para análise da loja!')">Solicitar Resgate</button>
+        <h3 style="color: var(--navy-blue); margin-bottom: 1rem;">Gerador de Links de Produtos</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Cole a URL de qualquer produto da loja abaixo para rastrear sua venda.</p>
+        <div style="display: flex; gap: 1rem;">
+            <input type="text" id="linkProduto" placeholder="Cole o link do produto aqui..." class="clean-input">
+            <button class="btn-primary" onclick="gerarDeepLink()">Gerar Link</button>
         </div>
         
-        <div class="table-responsive">
-            <table class="clean-table">
-                <thead>
-                    <tr>
-                        <th>Data da Venda</th>
-                        <th>Código do Pedido</th>
-                        <th>Valor da Compra</th>
-                        <th>Sua Comissão Gerada</th>
-                        <th>Status do Repasse</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for venda in vendas %}
-                    <tr>
-                        <td>{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
-                        <td><code>{{ venda.pedido_id_nuvemshop }}</code></td>
-                        <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
-                        <td><strong>R$ {{ "%.2f"|format(venda.valor_comissao) }}</strong></td>
-                        <td><span class="badge {{ venda.status_pagamento }}">{{ 'Liberado' if venda.status_pagamento == 'pago' else 'Aguardando' }}</span></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="empty-state">Você ainda não possui vendas registradas com os seus links de divulgação.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div id="resultadoLink" style="display: none; gap: 1rem; margin-top: 1rem; background: #F9FAFB; padding: 1rem; border-radius: 8px; border: 1px dashed var(--gold);">
+            <input type="text" readonly id="linkGerado" class="clean-input">
+            <button class="btn-primary btn-gold" onclick="copiarLink('linkGerado')">Copiar</button>
         </div>
     </div>
 </div>
 
-<!-- Lógica de Usabilidade da Interface (JS) -->
 <script>
-function generateProductLink() {
-    var inputUrl = document.getElementById("productUrl").value.trim();
-    var utm = "{{ config.codigo_utm }}";
-    
-    if (!inputUrl) {
-        alert("Por favor, cole o link de um produto da loja primeiro.");
-        return;
-    }
-    
-    // Divide os parâmetros caso o usuário já cole um link com lixo eletrônico ou UTMs antigas
-    var cleanUrl = inputUrl.split('?')[0];
-    
-    // Garante a formatação adequada removendo barras extras ao final antes de concatenar
-    if (cleanUrl.endsWith('/')) {
-        cleanUrl = cleanUrl.slice(0, -1);
-    }
-    
-    // Concatena a tag estruturada do afiliado no produto
-    var finalUrl = cleanUrl + "/?utm_campaign=" + utm;
-    
-    // Atualiza a interface e exibe o card de cópia rápida
-    document.getElementById("utmLink").value = finalUrl;
-    document.getElementById("resultBox").style.display = "flex";
+function copiarLink(elementId) {
+    var copyText = document.getElementById(elementId);
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value).then(() => alert("Link copiado com sucesso!"));
 }
 
-function copyLink() {
-    var copyText = document.getElementById("utmLink");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); // Suporte para dispositivos móveis
+function gerarDeepLink() {
+    var input = document.getElementById("linkProduto").value.trim();
+    var utm = "{{ config.codigo_utm }}";
+    if (!input) return;
     
-    navigator.clipboard.writeText(copyText.value).then(function() {
-        alert("Link personalizado copiado! Pronto para você colar nos seus Stories ou Bio.");
-    }).catch(function() {
-        // Fallback caso o navegador bloqueie o clipboard temporariamente
-        alert("Selecione o texto e copie manualmente.");
-    });
+    var base = input.split('?')[0];
+    if (base.endsWith('/')) base = base.slice(0, -1);
+    
+    document.getElementById("linkGerado").value = base + "/?utm_campaign=" + utm;
+    document.getElementById("resultadoLink").style.display = "flex";
 }
 </script>
 {% endblock %}

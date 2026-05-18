@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Plataforma de Parceiros{% endblock %}</title>
-    <!-- Fonte limpa e profissional -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Arquivo CSS principal -->
+    <title>{% block title %}Gestão de Afiliados{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Sistema de alertas limpo -->
-    <div class="flash-messages">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert-box">{{ message }}</div>
-                {% endfor %}
+    {% if current_user.is_authenticated and not current_user.senha_temporaria %}
+    <nav class="top-navbar">
+        <a href="#" class="brand-logo">ELLIC <span>Afiliados</span></a>
+        <div class="nav-links">
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('admin.afiliados') }}" class="{% if request.endpoint == 'admin.afiliados' %}active{% endif %}">Afiliados</a>
+            <a href="{{ url_for('admin.financeiro') }}" class="{% if request.endpoint == 'admin.financeiro' %}active{% endif %}">Financeiro</a>
+            {% else %}
+            <a href="{{ url_for('parceiros.dashboard') }}" class="active">Meu Painel</a>
             {% endif %}
-        {% endwith %}
-    </div>
+            <a href="{{ url_for('admin.logout') }}" class="btn-logout-nav">Sair</a>
+        </div>
+    </nav>
+    {% endif %}
 
-    <!-- Conteúdo dinâmico de cada página vai entrar aqui -->
-    <main class="main-container">
+    <main>
         {% block content %}{% endblock %}
     </main>
 </body>

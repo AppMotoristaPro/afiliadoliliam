@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Financeiro{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="page-header">
+        <h2 class="page-title">Controle Financeiro</h2>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="margin-bottom: 1.5rem;">Extrato de Vendas Individuais</h3>
+        <table class="clean-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Afiliado Responsável</th>
+                    <th>ID Pedido</th>
+                    <th>Valor do Pedido</th>
+                    <th>Comissão a Pagar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in vendas %}
+                <tr>
+                    <td>{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
+                    <td><strong>{{ venda.parceiro.nome }}</strong></td>
+                    <td>{{ venda.pedido_id_nuvemshop }}</td>
+                    <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                    <td class="text-gold" style="font-weight: 700;">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
