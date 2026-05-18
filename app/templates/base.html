@@ -3,45 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Ellic Afiliados{% endblock %}</title>
+    <title>{% block title %}Ellic | Gestão{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       tailwind.config = {
         theme: {
-          extend: {
-            colors: { navy: { DEFAULT: '#0B1B3D', light: '#1A2E5A' }, gold: { DEFAULT: '#C5A059', hover: '#D4AF37' } }
-          }
+          extend: { colors: { navy: { DEFAULT: '#0B1B3D', light: '#1A2E5A' }, gold: { DEFAULT: '#C5A059', hover: '#D4AF37' } } }
         }
       }
     </script>
+    <style>
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800 font-sans">
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans tracking-wide">
     {% if current_user.is_authenticated and not current_user.senha_temporaria %}
-    <nav class="bg-navy shadow-lg">
+    <nav class="bg-navy shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <a href="#" class="text-2xl font-bold text-gold tracking-wider">ELLIC <span class="text-white font-light text-lg">Afiliados</span></a>
-                <div class="flex space-x-6 items-center">
+                <a href="#" class="text-2xl font-bold text-gold tracking-widest uppercase">ELLIC</a>
+                <div class="flex space-x-8 items-center text-sm font-medium">
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold font-medium transition">Dashboard</a>
-                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold font-medium transition">Afiliados</a>
-                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold font-medium transition">Financeiro</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition">Visão Geral</a>
+                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition">Sócios</a>
+                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition">Financeiro</a>
                     {% else %}
-                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold font-medium transition">Meu Painel</a>
+                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Dashboard</a>
+                    <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition">Meus Links</a>
+                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Extrato de Vendas</a>
                     {% endif %}
-                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-2 rounded-md font-semibold transition">Sair</a>
+                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded transition">Sair</a>
                 </div>
             </div>
         </div>
     </nav>
     {% endif %}
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded shadow" role="alert">
-                    <p class="font-medium">{{ messages[0] }}</p>
+                <div class="bg-navy/10 border-l-4 border-navy text-navy p-4 mb-6 rounded shadow-sm">
+                    <p class="font-semibold">{{ messages[0] }}</p>
                 </div>
             {% endif %}
         {% endwith %}

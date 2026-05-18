@@ -1,55 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Meu Painel | Ellic{% endblock %}
+{% block title %}Painel do Sócio{% endblock %}
 {% block content %}
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-navy border-l-4 border-gold pl-3">Bem-vindo(a), {{ config.nome }}!</h1>
+<div class="mb-8 border-l-4 border-gold pl-4">
+    <h1 class="text-3xl font-bold text-navy">Visão Estratégica</h1>
+    <p class="text-gray-500 text-sm mt-1">Acompanhe seus resultados de parceria com a Ellic.</p>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-    <div class="bg-navy p-6 rounded-xl shadow border-b-4 border-gold text-white">
-        <p class="text-sm font-bold text-gray-300 uppercase tracking-wide">Comissão Liberada</p>
-        <p class="text-4xl font-extrabold text-gold mt-2">R$ {{ "%.2f"|format(saldo_pago) }}</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+    <div class="glass-panel p-8 rounded-2xl shadow-sm border-t-4 border-navy">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Volume de Vendas</p>
+        <p class="text-4xl font-extrabold text-navy mt-2">R$ {{ "%.2f"|format(vol_vendas) }}</p>
     </div>
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-navy">
-        <p class="text-sm font-bold text-gray-500 uppercase tracking-wide">Aguardando Liberação</p>
-        <p class="text-4xl font-extrabold text-navy mt-2">R$ {{ "%.2f"|format(saldo_pendente) }}</p>
+    <div class="glass-panel p-8 rounded-2xl shadow-sm border-t-4 border-gold">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total de Comissões</p>
+        <p class="text-4xl font-extrabold text-gold mt-2">R$ {{ "%.2f"|format(vol_comissoes) }}</p>
     </div>
 </div>
 
-<div class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-gold mb-8">
-    <h3 class="text-xl font-bold text-navy mb-4">Seu Link Oficial</h3>
-    <div class="flex space-x-3 mb-8">
-        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-gray-50 border border-gray-200 text-gray-600 rounded-lg px-4 font-mono text-sm outline-none">
-        <button onclick="copiarLink('linkLoja')" class="bg-gold hover:bg-gold-hover text-navy font-bold px-6 py-3 rounded-lg transition shadow">Copiar</button>
-    </div>
-
-    <hr class="mb-6 border-gray-200">
-
-    <h3 class="text-xl font-bold text-navy mb-2">Gerador de Links de Produtos</h3>
-    <p class="text-gray-500 text-sm mb-4">Cole o link de qualquer peça da loja Ellic abaixo para gerar sua comissão.</p>
-    <div class="flex space-x-3">
-        <input type="text" id="linkProduto" placeholder="Ex: https://www.ellicmodaevangelica.com.br/vestido-x" class="w-full border border-gray-300 rounded-lg px-4 focus:border-navy outline-none">
-        <button onclick="gerarDeepLink()" class="bg-navy hover:bg-navy-light text-white font-bold px-6 py-3 rounded-lg transition">Gerar Link</button>
-    </div>
-    
-    <div id="resultadoLink" class="hidden mt-4 bg-blue-50 border border-blue-100 p-4 rounded-lg flex space-x-3 items-center">
-        <input type="text" readonly id="linkGerado" class="w-full bg-transparent font-mono text-navy font-semibold outline-none">
-        <button onclick="copiarLink('linkGerado')" class="bg-gold text-navy font-bold px-4 py-2 rounded shadow hover:bg-gold-hover">Copiar Rápido</button>
+<div class="glass-panel p-8 rounded-2xl shadow-sm">
+    <h3 class="text-xl font-bold text-navy mb-4">Central de Captação</h3>
+    <p class="text-gray-500 text-sm mb-6">Utilize o link abaixo em suas campanhas para garantir o rastreio automático de todas as vendas.</p>
+    <div class="flex space-x-4">
+        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-white border border-gray-200 text-gray-700 rounded-lg px-4 py-3 font-mono text-sm outline-none shadow-inner">
+        <button onclick="copiarLink()" class="bg-navy hover:bg-navy-light text-white font-bold px-8 py-3 rounded-lg transition shadow-md">COPIAR LINK</button>
     </div>
 </div>
 
 <script>
-function copiarLink(id) {
-    var txt = document.getElementById(id); txt.select();
-    navigator.clipboard.writeText(txt.value).then(() => alert("Link copiado para seus Stories!"));
-}
-function gerarDeepLink() {
-    var inp = document.getElementById("linkProduto").value.trim();
-    if (!inp) return;
-    var base = inp.split('?')[0];
-    if (base.endsWith('/')) base = base.slice(0, -1);
-    document.getElementById("linkGerado").value = base + "/?utm_campaign={{ config.codigo_utm }}";
-    document.getElementById("resultadoLink").classList.remove("hidden");
+function copiarLink() {
+    var txt = document.getElementById("linkLoja"); txt.select();
+    navigator.clipboard.writeText(txt.value).then(() => alert("Link copiado para a área de transferência."));
 }
 </script>
 {% endblock %}
