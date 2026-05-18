@@ -1,62 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Visão Geral{% endblock %}
+{% block title %}Dashboard | Ellic{% endblock %}
 {% block content %}
-<div class="dashboard-wrapper">
-    <div class="page-header">
-        <h2 class="page-title">Visão Geral do Programa</h2>
-    </div>
-
-    <!-- Filtro de Data -->
-    <form class="filter-bar" method="GET" action="{{ url_for('admin.dashboard') }}">
-        <div class="filter-group">
-            <label>Data Início</label>
-            <input type="date" name="data_inicio" value="{{ d_inicio }}" class="clean-input">
-        </div>
-        <div class="filter-group">
-            <label>Data Fim</label>
-            <input type="date" name="data_fim" value="{{ d_fim }}" class="clean-input">
-        </div>
-        <button type="submit" class="btn-primary">Aplicar Filtro</button>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn-primary" style="background: var(--text-muted);">Limpar</a>
+<div class="mb-8 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-navy border-l-4 border-gold pl-3">Visão Geral</h1>
+    
+    <!-- Filtros de Data e Mês -->
+    <form class="flex space-x-3 bg-white p-2 rounded-lg shadow" method="GET">
+        <input type="date" name="dia" value="{{ dia }}" class="px-3 py-2 border rounded text-sm outline-none focus:border-gold">
+        <span class="py-2 text-gray-400">ou</span>
+        <input type="month" name="mes" value="{{ mes }}" class="px-3 py-2 border rounded text-sm outline-none focus:border-gold">
+        <button type="submit" class="bg-navy text-white px-4 py-2 rounded font-semibold hover:bg-navy-light transition">Filtrar</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-300">Limpar</a>
     </form>
+</div>
 
-    <!-- Cards Principais -->
-    <div class="stats-grid">
-        <div class="glass-card stat-card">
-            <span class="stat-label">Volume de Vendas</span>
-            <h3 class="stat-value">R$ {{ "%.2f"|format(faturamento_total) }}</h3>
-        </div>
-        <div class="glass-card stat-card">
-            <span class="stat-label">Comissões Geradas</span>
-            <h3 class="stat-value text-gold">R$ {{ "%.2f"|format(comissoes_totais) }}</h3>
-        </div>
-        <div class="glass-card stat-card">
-            <span class="stat-label">Total de Afiliados</span>
-            <h3 class="stat-value">{{ total_afiliados }}</h3>
-        </div>
+<!-- Cards de Volume -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-navy">
+        <p class="text-sm font-bold text-gray-500 uppercase tracking-wide">Volume de Vendas</p>
+        <p class="text-3xl font-extrabold text-navy mt-2">R$ {{ "%.2f"|format(fat_total) }}</p>
     </div>
-
-    <!-- Gráfico de Linhas -->
-    <div class="glass-card">
-        <h3 style="margin-bottom: 1rem; color: var(--navy-blue);">Evolução de Vendas Diárias</h3>
-        <canvas id="graficoVendas" height="100"></canvas>
+    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-gold">
+        <p class="text-sm font-bold text-gray-500 uppercase tracking-wide">Comissões Geradas</p>
+        <p class="text-3xl font-extrabold text-gold mt-2">R$ {{ "%.2f"|format(com_total) }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-gray-300">
+        <p class="text-sm font-bold text-gray-500 uppercase tracking-wide">Total de Afiliados</p>
+        <p class="text-3xl font-extrabold text-navy mt-2">{{ tot_afiliados }}</p>
     </div>
 </div>
 
+<!-- Gráfico de Linha -->
+<div class="bg-white p-6 rounded-xl shadow-sm">
+    <h3 class="text-lg font-bold text-navy mb-4">Evolução de Vendas Diárias</h3>
+    <canvas id="vendasChart" height="80"></canvas>
+</div>
+
 <script>
-    const ctx = document.getElementById('graficoVendas').getContext('2d');
+    const ctx = document.getElementById('vendasChart').getContext('2d');
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: {{ labels_grafico | tojson }},
             datasets: [{
-                label: 'Volume Faturado (R$)',
+                label: 'Faturamento R$',
                 data: {{ valores_grafico | tojson }},
-                borderColor: '#1A2E5A',
-                backgroundColor: 'rgba(26, 46, 90, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4
+                borderColor: '#C5A059', backgroundColor: 'rgba(197, 160, 89, 0.1)',
+                borderWidth: 3, fill: true, tension: 0.4
             }]
         },
         options: { responsive: true, plugins: { legend: { display: false } } }

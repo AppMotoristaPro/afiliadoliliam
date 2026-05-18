@@ -1,45 +1,90 @@
 {% extends "base.html" %}
-{% block title %}Afiliados{% endblock %}
+{% block title %}Afiliados | Ellic{% endblock %}
 {% block content %}
-<div class="dashboard-wrapper">
-    <div class="page-header">
-        <h2 class="page-title">Gestão de Afiliados</h2>
-        <a href="#" class="btn-primary btn-gold" onclick="document.getElementById('modalNovo').style.display='flex'">+ Novo Afiliado</a>
-    </div>
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-navy border-l-4 border-gold pl-3">Gestão de Afiliados</h1>
+    <button onclick="document.getElementById('modalNovo').classList.remove('hidden')" class="bg-gold text-navy font-bold px-6 py-2 rounded-lg shadow hover:bg-gold-hover transition">
+        + Novo Afiliado
+    </button>
+</div>
 
-    <div class="glass-card">
-        <table class="clean-table">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>E-mail</th>
-                    <th>Código UTM</th>
-                    <th>Taxa</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for af in afiliados %}
-                <tr>
-                    <td><strong>{{ af.nome }}</strong></td>
-                    <td>{{ af.usuario.email }}</td>
-                    <td><code>{{ af.codigo_utm }}</code></td>
-                    <td>{{ af.taxa_comissao }}%</td>
-                    <td><span class="badge pago">Ativo</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="bg-navy text-gold text-sm uppercase tracking-wide">
+                <th class="p-4">Nome</th>
+                <th class="p-4">ID Afiliado</th>
+                <th class="p-4">Comissão</th>
+                <th class="p-4">Ações</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-700">
+            {% for af in afiliados %}
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-4 font-bold">{{ af.nome }}</td>
+                <td class="p-4"><span class="bg-gray-100 text-navy px-2 py-1 rounded font-mono text-sm">{{ af.codigo_utm }}</span></td>
+                <td class="p-4 font-semibold">{{ af.taxa_comissao }}%</td>
+                <td class="p-4">
+                    <button onclick="abrirEdit('{{ af.id }}', '{{ af.usuario.email }}', '{{ af.celular or '' }}', '{{ af.chave_pix or '' }}')" class="text-gold hover:text-navy font-semibold underline">Editar Cadastro</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Novo Afiliado -->
+<div id="modalNovo" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl border-t-4 border-gold">
+        <h2 class="text-2xl font-bold text-navy mb-6">Adicionar Afiliado</h2>
+        <form action="{{ url_for('admin.afiliados') }}" method="POST" class="space-y-4">
+            <div><label class="text-sm font-bold text-navy">Nome Completo</label><input type="text" name="nome" required class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            <div><label class="text-sm font-bold text-navy">E-mail</label><input type="email" name="email" required class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-sm font-bold text-navy">Comissão (%)</label><input type="number" step="0.1" name="taxa" value="10.0" class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+                <div><label class="text-sm font-bold text-navy">Celular</label><input type="text" name="celular" class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            </div>
+            <div><label class="text-sm font-bold text-navy">Chave PIX</label><input type="text" name="chave_pix" class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            <div class="flex space-x-3 mt-6">
+                <button type="button" onclick="document.getElementById('modalNovo').classList.add('hidden')" class="w-full py-2 bg-gray-200 text-gray-800 font-bold rounded hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="w-full py-2 bg-navy text-white font-bold rounded hover:bg-navy-light">Salvar</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- Modal Novo Afiliado (Simplificado para o exemplo) -->
-<div id="modalNovo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 999;">
-    <div style="background: #fff; padding: 2rem; border-radius: 12px; width: 400px;">
-        <h3 style="margin-bottom: 1rem;">Adicionar Afiliado</h3>
-        <p>Acesse /parceiro/novo para processar via backend...</p>
-        <button class="btn-primary" onclick="document.getElementById('modalNovo').style.display='none'">Fechar</button>
+<!-- Modal Editar Afiliado -->
+<div id="modalEdit" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl border-t-4 border-gold">
+        <h2 class="text-2xl font-bold text-navy mb-6">Editar Afiliado</h2>
+        <form id="formEdit" method="POST" class="space-y-4">
+            <div><label class="text-sm font-bold text-navy">E-mail</label><input type="email" id="editEmail" name="email" required class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            <div><label class="text-sm font-bold text-navy">Celular</label><input type="text" id="editCelular" name="celular" class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            <div><label class="text-sm font-bold text-navy">Chave PIX</label><input type="text" id="editPix" name="chave_pix" class="w-full p-2 border rounded mt-1 outline-none focus:border-gold"></div>
+            
+            <div class="p-3 bg-red-50 border border-red-200 rounded mt-4">
+                <label class="flex items-center space-x-2 text-red-700 font-semibold cursor-pointer">
+                    <input type="checkbox" name="resetar_senha" class="form-checkbox h-4 w-4 text-red-600">
+                    <span>Resetar senha para Temporária</span>
+                </label>
+            </div>
+
+            <div class="flex space-x-3 mt-6">
+                <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')" class="w-full py-2 bg-gray-200 text-gray-800 font-bold rounded hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="w-full py-2 bg-navy text-white font-bold rounded hover:bg-navy-light">Atualizar</button>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+    function abrirEdit(id, email, celular, pix) {
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editCelular').value = celular;
+        document.getElementById('editPix').value = pix;
+        document.getElementById('formEdit').action = '/admin/afiliado/' + id + '/editar';
+        document.getElementById('modalEdit').classList.remove('hidden');
+    }
+</script>
 {% endblock %}
 

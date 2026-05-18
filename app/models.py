@@ -30,6 +30,7 @@ class ParceiroConfig(db.Model):
     codigo_utm = db.Column(db.String(50), unique=True, nullable=False)
     taxa_comissao = db.Column(db.Float, default=10.0)
     chave_pix = db.Column(db.String(100), nullable=True)
+    celular = db.Column(db.String(20), nullable=True)
     
     usuario = db.relationship('Usuario', backref=db.backref('configuracao', uselist=False))
 
@@ -39,6 +40,7 @@ class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
     pedido_id_nuvemshop = db.Column(db.String(100), unique=True, nullable=False)
+    produtos_resumo = db.Column(db.String(255), default="Produtos Diversos")
     valor_total = db.Column(db.Float, nullable=False)
     valor_comissao = db.Column(db.Float, nullable=False)
     data_venda = db.Column(db.DateTime, default=fuso_sao_paulo)
@@ -52,7 +54,7 @@ class Saque(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
     valor = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='pendente') # pendente, pago
+    status = db.Column(db.String(20), default='pendente')
     data_solicitacao = db.Column(db.DateTime, default=fuso_sao_paulo)
     data_pagamento = db.Column(db.DateTime, nullable=True)
     
@@ -60,7 +62,6 @@ class Saque(db.Model):
 
 class LojaConfig(db.Model):
     __tablename__ = 'loja_config'
-    
     id = db.Column(db.Integer, primary_key=True)
     dias_carencia_comissao = db.Column(db.Integer, default=7)
     valor_minimo_saque = db.Column(db.Float, default=50.0)
