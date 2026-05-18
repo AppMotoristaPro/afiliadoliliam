@@ -1,60 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Painel Administrativo | Parceirando Style{% endblock %}
+{% block title %}Painel de Gestão{% endblock %}
 
 {% block content %}
 <style>
-    /* Estilos Adicionais para Modais e Filtros */
-    .search-bar-container {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .modal-content {
-        background: #ffffff;
-        padding: 2rem;
-        border-radius: 12px;
-        width: 100%;
-        max-width: 500px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .modal-close {
-        background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;
-    }
-
-    .flash-alert {
-        background: #dbeafe; color: #1e40af; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;
-        border: 1px solid #bfdbfe; font-weight: 500;
-    }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #fff; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .flash-alert { background: #dbeafe; color: #1e40af; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #bfdbfe; font-weight: 500; }
 </style>
 
 <div class="dashboard-wrapper">
     <header class="dashboard-header">
         <div>
-            <h2>Visão Geral da Loja</h2>
+            <h2>Visão Geral Financeira</h2>
         </div>
-        <div class="user-info-meta">
-            <span class="user-email-tag">Administrador</span>
+        <div class="user-info-meta" style="gap: 1rem;">
+            <a href="{{ url_for('admin.novo_parceiro') }}" class="btn-primary" style="text-decoration: none; background: #166534;">+ Novo Parceiro</a>
             <a href="{{ url_for('admin.logout') }}" class="btn-logout">Sair</a>
         </div>
     </header>
@@ -67,64 +29,114 @@
       {% endif %}
     {% endwith %}
 
+    <!-- Indicadores -->
     <div class="stats-grid">
         <div class="glass-card stat-card">
-            <span class="stat-label">Faturamento via Parceiros</span>
+            <span class="stat-label">Faturamento Rastreado</span>
             <h3 class="stat-value text-blue">R$ {{ "%.2f"|format(faturamento_total) }}</h3>
         </div>
         <div class="glass-card stat-card">
-            <span class="stat-label">Total em Comissões</span>
+            <span class="stat-label">Comissões Acumuladas</span>
             <h3 class="stat-value text-amber">R$ {{ "%.2f"|format(comissoes_totais) }}</h3>
         </div>
         <div class="glass-card stat-card">
-            <span class="stat-label">Parceiros Conectados</span>
+            <span class="stat-label">Sócios Ativos</span>
             <h3 class="stat-value text-green">{{ total_parceiros }}</h3>
         </div>
     </div>
-    
-    <!-- Novo Cadastro -->
-    <div class="glass-card full-width">
-        <h3 class="section-card-title">Cadastrar Novo Parceiro de Negócio</h3>
-        <form action="{{ url_for('admin.novo_parceiro') }}" method="POST" class="clean-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Nome Completo</label>
-                <input type="text" name="nome" required placeholder="Nome do Afiliado" class="clean-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>E-mail de Acesso</label>
-                <input type="email" name="email" required placeholder="parceiro@email.com" class="clean-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Senha Temporária</label>
-                <input type="text" name="senha_temporaria" required placeholder="Ex: Mud@r123" class="clean-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Comissão (%)</label>
-                <input type="number" name="taxa" step="0.1" value="10.0" required class="clean-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Chave PIX</label>
-                <input type="text" name="chave_pix" placeholder="CPF, Celular ou E-mail" class="clean-input">
-            </div>
-            <button type="submit" class="btn-primary" style="margin-top: 0; padding: 0.75rem;">Adicionar</button>
-        </form>
-    </div>
 
-    <!-- Tabela Gerencial com Filtros Inteligentes e Ações -->
-    <div class="glass-card full-width">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-            <h3 class="section-card-title" style="margin-bottom: 0;">Gestão de Parceiros</h3>
-            
-            <!-- Formulário de Filtros -->
-            <form method="GET" action="{{ url_for('admin.dashboard') }}" style="display: flex; gap: 0.5rem; max-width: 400px;">
-                <input type="text" name="busca" placeholder="Pesquisar por nome, email ou UTM..." value="{{ termo_busca }}" class="clean-input" style="padding: 0.4rem 0.8rem;">
-                <button type="submit" class="btn-action-table" style="background: #f3f4f6;">Filtrar</button>
-                {% if termo_busca %}
-                <a href="{{ url_for('admin.dashboard') }}" class="btn-action-table" style="color: #dc2626; text-decoration: none; padding-top: 0.5rem;">Limpar</a>
-                {% endif %}
-            </form>
+    <!-- Layout Dividido: Top Sócios e Regras -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        
+        <!-- Ranking Analítico -->
+        <div class="glass-card" style="margin-bottom: 0;">
+            <h3 class="section-card-title">Ranking de Desempenho (Top Sócios)</h3>
+            <table class="clean-table">
+                <thead>
+                    <tr>
+                        <th>Parceiro</th>
+                        <th>Volume de Vendas</th>
+                        <th>Comissão Gerada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for socio in top_socios %}
+                    <tr>
+                        <td><strong>{{ socio.nome }}</strong></td>
+                        <td>R$ {{ "%.2f"|format(socio.total_vendido) }}</td>
+                        <td class="text-blue">R$ {{ "%.2f"|format(socio.total_comissao) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="empty-state">Dados insuficientes para o ranking.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
+        <!-- Regras de Negócio -->
+        <div class="glass-card" style="margin-bottom: 0;">
+            <h3 class="section-card-title">Regras Financeiras</h3>
+            <form action="{{ url_for('admin.salvar_configuracoes') }}" method="POST" class="clean-form">
+                <div class="form-group">
+                    <label>Prazo de Liberação (Dias)</label>
+                    <input type="number" name="dias_carencia" value="{{ config_loja.dias_carencia_comissao }}" class="clean-input">
+                </div>
+                <div class="form-group">
+                    <label>Valor Mínimo para Saque (R$)</label>
+                    <input type="number" step="0.1" name="valor_minimo" value="{{ config_loja.valor_minimo_saque }}" class="clean-input">
+                </div>
+                <button type="submit" class="btn-action-table" style="width: 100%; background: #1e3a8a; color: white;">Salvar Regras</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Central de Saques (Fluxo de Caixa) -->
+    <div class="glass-card full-width">
+        <h3 class="section-card-title" style="color: #92400e;">Solicitações de Saque Pendentes</h3>
+        <div class="table-responsive">
+            <table class="clean-table">
+                <thead>
+                    <tr>
+                        <th>Data do Pedido</th>
+                        <th>Parceiro</th>
+                        <th>Chave PIX</th>
+                        <th>Valor Solicitado</th>
+                        <th>Ação Financeira</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for saque in saques %}
+                    <tr>
+                        <td>{{ saque.data_solicitacao.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><strong>{{ saque.parceiro.nome }}</strong></td>
+                        <td><code>{{ saque.parceiro.chave_pix }}</code></td>
+                        <td class="text-amber"><strong>R$ {{ "%.2f"|format(saque.valor) }}</strong></td>
+                        <td>
+                            <form action="{{ url_for('admin.aprovar_saque', id=saque.id) }}" method="POST" onsubmit="return confirm('Confirmar que a transferência PIX foi realizada no banco da loja?');">
+                                <button type="submit" class="btn-action-table" style="background: #dcfce7; color: #166534; border-color: #86efac;">Marcar como Pago</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">Nenhum pedido de repasse financeiro pendente.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Gestão de Parceiros -->
+    <div class="glass-card full-width">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 class="section-card-title" style="margin-bottom: 0;">Base de Parceiros</h3>
+            <form method="GET" action="{{ url_for('admin.dashboard') }}" style="display: flex; gap: 0.5rem; max-width: 400px;">
+                <input type="text" name="busca" placeholder="Pesquisar registro..." value="{{ termo_busca }}" class="clean-input" style="padding: 0.4rem 0.8rem;">
+                <button type="submit" class="btn-action-table" style="background: #f3f4f6;">Filtrar</button>
+                {% if termo_busca %}<a href="{{ url_for('admin.dashboard') }}" class="btn-action-table" style="color: #dc2626; text-decoration: none; padding-top: 0.5rem;">Limpar</a>{% endif %}
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="clean-table">
                 <thead>
@@ -132,9 +144,9 @@
                         <th>Nome</th>
                         <th>E-mail</th>
                         <th>UTM</th>
-                        <th>Comissão Atual</th>
+                        <th>Taxa</th>
                         <th>Status</th>
-                        <th>Ações Administrativas</th>
+                        <th>Gestão</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,56 +164,11 @@
                             {% endif %}
                         </td>
                         <td style="display: flex; gap: 0.5rem;">
-                            <!-- Botão de Editar aciona o modal e passa os dados via data attributes -->
-                            <button type="button" class="btn-action-table" 
-                                    onclick="abrirModalEdicao('{{ parceiro.id }}', '{{ parceiro.nome }}', '{{ parceiro.usuario.email }}', '{{ parceiro.taxa_comissao }}', '{{ parceiro.chave_pix }}')">
-                                Editar
-                            </button>
-                            
-                            <!-- Formulário direto para resetar senha -->
-                            <form action="{{ url_for('admin.resetar_senha', id=parceiro.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja resetar a senha deste parceiro? O sistema exigirá uma nova senha no próximo login.');">
-                                <button type="submit" class="btn-action-table" style="color: #991b1b; border-color: #fca5a5;">Resetar Senha</button>
+                            <button type="button" class="btn-action-table" onclick="abrirModalEdicao('{{ parceiro.id }}', '{{ parceiro.nome }}', '{{ parceiro.usuario.email }}', '{{ parceiro.taxa_comissao }}', '{{ parceiro.chave_pix }}')">Editar</button>
+                            <form action="{{ url_for('admin.resetar_senha', id=parceiro.id) }}" method="POST" onsubmit="return confirm('Deseja gerar nova senha provisória?');">
+                                <button type="submit" class="btn-action-table" style="color: #991b1b; border-color: #fca5a5;">Resetar</button>
                             </form>
                         </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="empty-state">Nenhum parceiro encontrado nos filtros.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Tabela Detalhada -->
-    <div class="glass-card full-width">
-        <h3 class="section-card-title">Relatório Consolidado de Vendas</h3>
-        <div class="table-responsive">
-            <table class="clean-table">
-                <thead>
-                    <tr>
-                        <th>Data (Fuso BR)</th>
-                        <th>Afiliado</th>
-                        <th>ID Pedido Loja</th>
-                        <th>Valor Bruto da Venda</th>
-                        <th>Comissão do Afiliado</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for venda in vendas %}
-                    <tr>
-                        <td>{{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td><strong>{{ venda.parceiro.nome }}</strong></td>
-                        <td>{{ venda.pedido_id_nuvemshop }}</td>
-                        <td>R$ {{ "%.2f"|format(venda.valor_total) }}</td>
-                        <td class="text-blue" style="font-weight: 600;">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
-                        <td><span class="badge {{ venda.status_pagamento }}">{{ 'Confirmado' if venda.status_pagamento == 'pago' else 'Aguardando' }}</span></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="empty-state">Nenhuma venda registrada através de links de parceiros.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -210,34 +177,21 @@
     </div>
 </div>
 
-<!-- Modal de Edição (Invisível por Padrão) -->
+<!-- Modal Edição -->
 <div id="modalEdicao" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="section-card-title" style="margin-bottom: 0;">Editar Parceiro</h3>
-            <button class="modal-close" onclick="fecharModal()">&times;</button>
+            <h3 class="section-card-title" style="margin-bottom: 0;">Ajustar Cadastro</h3>
+            <button class="modal-close" style="border: none; background: transparent; font-size: 1.5rem;" onclick="fecharModal()">&times;</button>
         </div>
-        
         <form id="formEdicao" method="POST" class="clean-form">
-            <div class="form-group">
-                <label>Nome Completo</label>
-                <input type="text" id="editNome" name="nome" required class="clean-input">
-            </div>
-            <div class="form-group">
-                <label>E-mail de Acesso</label>
-                <input type="email" id="editEmail" name="email" required class="clean-input">
-            </div>
-            <div class="form-group">
-                <label>Nova Comissão (%) - Aplicada apenas em vendas futuras</label>
-                <input type="number" id="editTaxa" name="taxa" step="0.1" required class="clean-input">
-            </div>
-            <div class="form-group">
-                <label>Chave PIX</label>
-                <input type="text" id="editPix" name="chave_pix" class="clean-input">
-            </div>
+            <div class="form-group"><label>Nome</label><input type="text" id="editNome" name="nome" required class="clean-input"></div>
+            <div class="form-group"><label>E-mail</label><input type="email" id="editEmail" name="email" required class="clean-input"></div>
+            <div class="form-group"><label>Taxa de Comissão (%)</label><input type="number" id="editTaxa" name="taxa" step="0.1" required class="clean-input"></div>
+            <div class="form-group"><label>Chave PIX</label><input type="text" id="editPix" name="chave_pix" class="clean-input"></div>
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                 <button type="button" class="btn-action-table" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
-                <button type="submit" class="btn-primary" style="flex: 1; margin: 0;">Salvar Alterações</button>
+                <button type="submit" class="btn-primary" style="flex: 1; margin: 0;">Salvar</button>
             </div>
         </form>
     </div>
@@ -245,22 +199,14 @@
 
 <script>
     function abrirModalEdicao(id, nome, email, taxa, pix) {
-        // Preenche os dados no formulário
         document.getElementById('editNome').value = nome;
         document.getElementById('editEmail').value = email;
         document.getElementById('editTaxa').value = taxa;
         document.getElementById('editPix').value = pix !== 'None' ? pix : '';
-        
-        // Define a rota de salvamento correta
         document.getElementById('formEdicao').action = '/admin/parceiro/' + id + '/editar';
-        
-        // Exibe o modal
         document.getElementById('modalEdicao').style.display = 'flex';
     }
-
-    function fecharModal() {
-        document.getElementById('modalEdicao').style.display = 'none';
-    }
+    function fecharModal() { document.getElementById('modalEdicao').style.display = 'none'; }
 </script>
 {% endblock %}
 

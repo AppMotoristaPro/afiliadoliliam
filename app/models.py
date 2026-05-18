@@ -3,7 +3,6 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone, timedelta
 
-# Define o Fuso Horário de São Paulo (UTC-3)
 def fuso_sao_paulo():
     return datetime.now(timezone(timedelta(hours=-3)))
 
@@ -13,7 +12,7 @@ class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha_hash = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(20), nullable=False) # 'admin' ou 'parceiro'
+    role = db.Column(db.String(20), nullable=False)
     senha_temporaria = db.Column(db.Boolean, default=False, nullable=False)
 
     def set_senha(self, senha):
@@ -42,10 +41,27 @@ class Venda(db.Model):
     pedido_id_nuvemshop = db.Column(db.String(100), unique=True, nullable=False)
     valor_total = db.Column(db.Float, nullable=False)
     valor_comissao = db.Column(db.Float, nullable=False)
-    
-    # Aplica a função do fuso horário na data da venda
     data_venda = db.Column(db.DateTime, default=fuso_sao_paulo)
     status_pagamento = db.Column(db.String(20), default='pendente')
 
     parceiro = db.relationship('ParceiroConfig', backref=db.backref('vendas', lazy=True))
+
+class Saque(db.Model):
+    __tablename__ = 'saques'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
+    valor = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='pendente') # pendente, pago
+    data_solicitacao = db.Column(db.DateTime, default=fuso_sao_paulo)
+    data_pagamento = db.Column(db.DateTime, nullable=True)
+    
+    parceiro = db.relationship('ParceiroConfig', backref=db.backref('saques', lazy=True))
+
+class LojaConfig(db.Model):
+    __tablename__ = 'loja_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    dias_carencia_comissao = db.Column(db.Integer, default=7)
+    valor_minimo_saque = db.Column(db.Float, default=50.0)
 
