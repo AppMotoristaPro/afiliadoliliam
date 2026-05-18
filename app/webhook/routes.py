@@ -12,29 +12,55 @@ def nuvemshop_webhook():
         if not data:
             return jsonify({'error': 'Nenhum dado JSON recebido'}), 400
 
-        utm = data.get('utm')
-        # Garante que o valor total seja convertido para float sem quebrar se vier como string
-        valor_total = float(data.get('valor_total', 0.0))
-        pedido_id_fake = f"MOCK-{uuid.uuid4().hex[:8].upper()}" 
+        # 1. IDENTIFICAÇÃO DO ID DO PEDIDO (Nuvemshop envia como 'id' ou 'number')
+        # Mantém compatibilidade com o nosso mock de testes se não achar as chaves reais
+        pedido_id = str(data.get('id', data.get('number', f"MOCK-{uuid.uuid4().hex[:8].upper()}")))
+
+        # 2. CAPTURA DO VALOR TOTAL DA VENDA
+        # Nuvemshop envia como 'total' (string ou float). Se não achar, busca seu campo de teste 'valor_total'
+        valor_bruto = data.get('total', data.get('valor_total'))
+        if not valor_bruto:
+            return jsonify({'message': 'Venda ignorada: Pedido sem valor de faturamento.'}), 200
+        valor_total = float(valor_bruto)
+
+        # 3. EXTRAÇÃO DA TAG DE RASTREIO (UTM)
+        utm = None
+
+        # Cenário A: Requisição oficial da Nuvemshop (Analisa os dados de tráfego do pedido)
+        # Geralmente mapeado em 'extra' ou parâmetros de URL guardados pela plataforma
+        if 'landing_page_url' in data and data['landing_page_url']:
+            url_pouso = data['landing_page_url']
+            if 'utm_campaign=' in url_pouso:
+                # Extrai o código que vem logo após o utm_campaign=
+                utm = url_pouso.split('utm_campaign=')[1].split('&')[0]
         
+        # Cenário B: Fallback para o nosso teste simplificado do Postman
         if not utm:
-            return jsonify({'message': 'Venda ignorada: Nenhuma tag UTM encontrada.'}), 200
+            utm = data.get('utm')
+
+        # Se mesmo após varrer o JSON não houver UTM, a venda foi orgânica (não veio de nenhum parceiro)
+        if not utm:
+            return jsonify({'message': 'Venda processada: Ignorada por não conter rastreio de parceiro (Venda Orgânica).'}), 200
             
-        # Busca o parceiro no banco de dados pelo código UTM
+        # 4. VALIDAÇÃO DO PARCEIRO NO BANCO NEON
         parceiro = ParceiroConfig.query.filter_by(codigo_utm=utm).first()
         
         if not parceiro:
             return jsonify({
-                'error': f'Código UTM {utm} não pertence a nenhum parceiro ativo no banco de dados. Acesse o painel administrativo e verifique se o código existe.'
-            }), 404
+                'message': f'Venda ignorada: O código UTM {utm} não está associado a nenhum parceiro ativo.'
+            }), 200
             
-        # Calcula a comissão com base na taxa individual do parceiro
+        # Evita duplicidade de pedidos (Garante que o mesmo webhook não processe o mesmo ID duas vezes)
+        venda_existente = Venda.query.filter_by(pedido_id_nuvemshop=pedido_id).first()
+        if venda_existente:
+            return jsonify({'message': 'Aviso: Esta comissão já foi processada anteriormente para este pedido.'}), 200
+
+        # 5. CÁLCULO E GRAVAÇÃO DA COMISSÃO
         valor_comissao = valor_total * (parceiro.taxa_comissao / 100)
         
-        # Correção técnica: usamos parceiro.id para gravar a chave estrangeira corretamente
         nova_venda = Venda(
             parceiro_id=parceiro.id,
-            pedido_id_nuvemshop=pedido_id_fake,
+            pedido_id_nuvemshop=pedido_id,
             valor_total=valor_total,
             valor_comissao=valor_comissao,
             status_pagamento='pago'
@@ -45,17 +71,15 @@ def nuvemshop_webhook():
         
         return jsonify({
             'status': 'sucesso',
-            'mensagem': 'Comissão processada e atribuída.',
-            'parceiro': parceiro.nome,
-            'taxa_aplicada': f"{parceiro.taxa_comissao}%",
-            'comissao_gerada': valor_comissao
+            'pedido_id': pedido_id,
+            'parceiro_atribuido': parceiro.nome,
+            'comissao_calculada': round(valor_comissao, 2)
         }), 201
 
     except Exception as e:
-        # Se qualquer coisa quebrar (erro de banco, conversão, etc), devolve o erro real no Postman
         db.session.rollback()
         return jsonify({
-            'error': 'Erro interno ao processar webhook',
+            'error': 'Falha interna ao processar a requisição de venda',
             'detalhes': str(e)
         }), 500
 
