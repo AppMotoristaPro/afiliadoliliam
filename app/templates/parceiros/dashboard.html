@@ -1,35 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Painel do Sócio{% endblock %}
+{% block title %}Meu App | Ellic{% endblock %}
 {% block content %}
-<div class="mb-8 border-l-4 border-gold pl-4">
-    <h1 class="text-3xl font-bold text-navy">Visão Estratégica</h1>
-    <p class="text-gray-500 text-sm mt-1">Acompanhe seus resultados de parceria com a Ellic.</p>
+<div class="mb-6 pt-2">
+    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Painel</h1>
+    <p class="text-gray-500 text-sm mt-1 font-medium">Olá, {{ config.nome.split()[0] }}!</p>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-    <div class="glass-panel p-8 rounded-2xl shadow-sm border-t-4 border-navy">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Volume de Vendas</p>
-        <p class="text-4xl font-extrabold text-navy mt-2">R$ {{ "%.2f"|format(vol_vendas) }}</p>
-    </div>
-    <div class="glass-panel p-8 rounded-2xl shadow-sm border-t-4 border-gold">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total de Comissões</p>
-        <p class="text-4xl font-extrabold text-gold mt-2">R$ {{ "%.2f"|format(vol_comissoes) }}</p>
+<div class="bg-gradient-to-br from-[#0B1B3D] to-[#1A2E5A] rounded-3xl p-6 shadow-ios-heavy text-white mb-6 relative overflow-hidden">
+    <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+    
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Comissão Liberada</p>
+    <h2 class="text-4xl font-black tracking-tight mb-6">R$ {{ "%.2f"|format(saldo_pago) }}</h2>
+    
+    <div class="flex justify-between items-end border-t border-white/10 pt-4">
+        <div>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Pendente</p>
+            <p class="font-semibold text-sm">R$ {{ "%.2f"|format(saldo_pendente) }}</p>
+        </div>
+        <div class="text-right">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">ID Afiliado</p>
+            <p class="font-mono text-sm opacity-80">{{ config.codigo_utm }}</p>
+        </div>
     </div>
 </div>
 
-<div class="glass-panel p-8 rounded-2xl shadow-sm">
-    <h3 class="text-xl font-bold text-navy mb-4">Central de Captação</h3>
-    <p class="text-gray-500 text-sm mb-6">Utilize o link abaixo em suas campanhas para garantir o rastreio automático de todas as vendas.</p>
-    <div class="flex space-x-4">
-        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-white border border-gray-200 text-gray-700 rounded-lg px-4 py-3 font-mono text-sm outline-none shadow-inner">
-        <button onclick="copiarLink()" class="bg-navy hover:bg-navy-light text-white font-bold px-8 py-3 rounded-lg transition shadow-md">COPIAR LINK</button>
+<div class="bg-white rounded-3xl p-6 shadow-ios mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-1">Seu Link Principal</h3>
+    <p class="text-gray-500 text-xs font-medium mb-4">Poste na sua Bio ou Stories gerais.</p>
+    
+    <div class="flex items-center space-x-3 bg-gray-100 p-2 rounded-2xl">
+        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-transparent border-none text-gray-600 font-mono text-xs outline-none px-2 truncate">
+        <button onclick="copiarLink('linkLoja')" class="bg-white text-navy font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition active:scale-95 text-xs whitespace-nowrap">Copiar</button>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+    <div class="bg-white p-5 rounded-3xl shadow-ios">
+        <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Vendas</p>
+        <p class="text-xl font-bold text-gray-900">R$ {{ "%.2f"|format(vol_vendas) }}</p>
+    </div>
+    <div class="bg-white p-5 rounded-3xl shadow-ios">
+        <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Taxa</p>
+        <p class="text-xl font-bold text-gray-900">{{ config.taxa_comissao }}%</p>
     </div>
 </div>
 
 <script>
-function copiarLink() {
-    var txt = document.getElementById("linkLoja"); txt.select();
-    navigator.clipboard.writeText(txt.value).then(() => alert("Link copiado para a área de transferência."));
+function copiarLink(id) {
+    var txt = document.getElementById(id); txt.select();
+    navigator.clipboard.writeText(txt.value).then(() => alert("Copiado com sucesso!"));
 }
 </script>
 {% endblock %}

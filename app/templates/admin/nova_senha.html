@@ -1,23 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Atualizar Credencial{% endblock %}
+{% block title %}Segurança | Ellic{% endblock %}
 {% block content %}
-<div class="min-h-[75vh] flex items-center justify-center">
-    <div class="glass-panel p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-gold bg-white">
-        <div class="text-center mb-8">
-            <h2 class="text-2xl font-bold text-navy tracking-widest uppercase">Segurança Ellic</h2>
-            <p class="text-gray-500 mt-2 text-sm font-medium">Por motivos de segurança, você precisa criar uma nova senha definitiva para acessar seu painel.</p>
+<div class="min-h-[85vh] flex flex-col justify-center items-center">
+    
+    <div class="text-center mb-8 px-4">
+        <div class="w-16 h-16 bg-navy text-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
-        
-        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900 tracking-wide">Atualize sua Senha</h2>
+        <p class="text-gray-500 mt-2 text-sm font-medium">Para sua segurança, crie uma senha definitiva antes de prosseguir.</p>
+    </div>
+
+    <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-ios-heavy">
+        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="space-y-5">
             <div>
-                <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1">Nova Senha</label>
-                <input type="password" name="nova_senha" required class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold outline-none transition shadow-inner">
+                <input type="password" name="nova_senha" required placeholder="Nova Senha" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 focus:border-gold outline-none transition-all placeholder-gray-400 font-medium">
             </div>
             <div>
-                <label class="block text-xs font-bold text-navy uppercase tracking-wide mb-1">Confirme a Nova Senha</label>
-                <input type="password" name="confirmacao" required class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold outline-none transition shadow-inner">
+                <input type="password" name="confirmacao" required placeholder="Confirme a Senha" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 focus:border-gold outline-none transition-all placeholder-gray-400 font-medium">
             </div>
-            <button type="submit" class="w-full bg-navy hover:bg-navy-light text-white font-bold py-3 rounded-lg shadow-lg transition tracking-wide mt-4">SALVAR E ACESSAR</button>
+            <button type="submit" class="w-full bg-navy hover:bg-navy-light text-white font-bold py-4 rounded-2xl shadow-lg transition-all tracking-wide mt-2 active:scale-95">SALVAR E ENTRAR</button>
         </form>
     </div>
 </div>

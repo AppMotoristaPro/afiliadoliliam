@@ -1,61 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Meus Links | Ellic{% endblock %}
+{% block title %}Links | Ellic{% endblock %}
 {% block content %}
-<div class="mb-8 border-l-4 border-gold pl-4">
-    <h1 class="text-3xl font-bold text-navy">Gerador de Links</h1>
-    <p class="text-gray-500 text-sm mt-1">Crie e gerencie URLs rastreáveis para produtos específicos da Ellic.</p>
+<div class="mb-6 pt-2">
+    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Gerador</h1>
 </div>
 
-<!-- Área de Geração de Novo Link -->
-<div class="glass-panel p-8 rounded-2xl shadow-sm mb-10 border-t-4 border-navy">
-    <h3 class="text-xl font-bold text-navy mb-4">Novo Link de Divulgação</h3>
-    <p class="text-gray-500 text-sm mb-6">Cole o link original da página do produto. O sistema anexará automaticamente sua credencial de sócio.</p>
-    
-    <form action="{{ url_for('parceiros.links') }}" method="POST" class="flex flex-col md:flex-row gap-4">
-        <input type="url" name="url_original" required placeholder="Ex: https://www.ellicmodaevangelica.com.br/produto/vestido-x" class="flex-grow bg-white border border-gray-200 text-gray-700 rounded-lg px-4 py-3 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold transition shadow-inner">
-        <button type="submit" class="bg-navy hover:bg-navy-light text-white font-bold px-8 py-3 rounded-lg transition shadow-md whitespace-nowrap">GERAR LINK</button>
+<div class="bg-white p-5 rounded-3xl shadow-ios mb-8">
+    <p class="text-gray-500 text-xs font-medium mb-4">Cole o link original do vestido ou peça abaixo para rastrear.</p>
+    <form action="{{ url_for('parceiros.links') }}" method="POST" class="space-y-4">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            </div>
+            <input type="url" name="url_original" required placeholder="https://www.ellic..." class="w-full pl-11 pr-4 py-3 bg-gray-100 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 transition-all font-medium text-sm">
+        </div>
+        <button type="submit" class="w-full bg-navy text-white font-bold py-3.5 rounded-2xl shadow-md active:scale-95 transition-all text-sm tracking-wide uppercase">Gerar Link com Comissão</button>
     </form>
 </div>
 
-<!-- Tabela de Histórico de Links -->
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
-    <div class="p-6 border-b border-gray-100 bg-gray-50">
-        <h3 class="text-lg font-bold text-navy">Histórico de Links Gerados</h3>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-navy text-gold text-xs uppercase tracking-widest">
-                    <th class="p-4 font-semibold">Data</th>
-                    <th class="p-4 font-semibold">Página Destino</th>
-                    <th class="p-4 font-semibold">Link Rastreável (Seu Link)</th>
-                    <th class="p-4 font-semibold text-center">Ação</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700 text-sm">
-                {% for link in historico %}
-                <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="p-4 whitespace-nowrap">{{ link.data_criacao.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td class="p-4 truncate max-w-xs text-gray-500" title="{{ link.url_original }}">{{ link.url_original }}</td>
-                    <td class="p-4 font-mono text-navy font-semibold truncate max-w-xs" id="link-{{ link.id }}">{{ link.url_rastreada }}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="copiarHistorico('link-{{ link.id }}')" class="bg-gold/10 text-gold hover:bg-gold hover:text-navy border border-gold px-4 py-1.5 rounded font-bold transition">Copiar</button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="p-8 text-center text-gray-400 italic">Nenhum link gerado até o momento. Utilize o painel acima para criar seu primeiro link rastreável.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Links Salvos</h3>
+<div class="bg-white rounded-3xl shadow-ios overflow-hidden mb-6">
+    <ul class="divide-y divide-gray-100">
+        {% for link in historico %}
+        <li class="p-4 flex items-center justify-between hover:bg-gray-50 transition active:bg-gray-100">
+            <div class="flex-1 min-w-0 pr-4">
+                <p class="text-sm font-bold text-gray-900 truncate">{{ link.url_original.split('ellicmodaevangelica.com.br/')[-1] or 'Página Inicial' }}</p>
+                <p class="text-xs text-gray-500 truncate mt-0.5" id="link-{{ link.id }}">{{ link.url_rastreada }}</p>
+            </div>
+            <button onclick="copiarHistorico('link-{{ link.id }}')" class="flex-shrink-0 bg-gray-100 text-navy p-2 rounded-full hover:bg-gold hover:text-white transition active:scale-90">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+        </li>
+        {% else %}
+        <li class="p-6 text-center text-sm text-gray-400 font-medium">Nenhum link gerado.</li>
+        {% endfor %}
+    </ul>
 </div>
 
 <script>
-function copiarHistorico(elementId) {
-    var copyText = document.getElementById(elementId).innerText;
-    navigator.clipboard.writeText(copyText).then(() => alert("Link rastreável copiado para sua área de transferência!"));
+function copiarHistorico(id) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => alert("Copiado!"));
 }
 </script>
 {% endblock %}

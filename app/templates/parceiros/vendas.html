@@ -1,48 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Extrato de Vendas | Ellic{% endblock %}
+{% block title %}Vendas | Ellic{% endblock %}
 {% block content %}
-<div class="mb-8 border-l-4 border-gold pl-4">
-    <h1 class="text-3xl font-bold text-navy">Extrato de Vendas</h1>
-    <p class="text-gray-500 text-sm mt-1">Acompanhamento detalhado de todas as conversões geradas pelas suas campanhas.</p>
+<div class="mb-6 pt-2">
+    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Extrato</h1>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-navy text-gold text-xs uppercase tracking-widest">
-                    <th class="p-4 font-semibold">Data da Venda</th>
-                    <th class="p-4 font-semibold">ID do Pedido</th>
-                    <th class="p-4 font-semibold">Produtos Adquiridos</th>
-                    <th class="p-4 font-semibold">Valor Total</th>
-                    <th class="p-4 font-semibold text-right">Sua Comissão</th>
-                    <th class="p-4 font-semibold text-center">Status Financeiro</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700 text-sm">
-                {% for venda in vendas %}
-                <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="p-4 whitespace-nowrap">{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
-                    <td class="p-4 font-mono text-xs text-gray-400">{{ venda.pedido_id_nuvemshop }}</td>
-                    <td class="p-4 italic text-gray-500">{{ venda.produtos_resumo }}</td>
-                    <td class="p-4 font-medium">R$ {{ "%.2f"|format(venda.valor_total) }}</td>
-                    <td class="p-4 text-right font-bold text-gold text-base">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
-                    <td class="p-4 text-center">
-                        {% if venda.status_pagamento == 'pago' %}
-                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border border-green-200">Pago / Zerado</span>
-                        {% else %}
-                        <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border border-gray-200">Pendente</span>
-                        {% endif %}
-                    </td>
-                </tr>
+<div class="bg-white rounded-3xl shadow-ios overflow-hidden mb-6">
+    <ul class="divide-y divide-gray-100">
+        {% for venda in vendas %}
+        <li class="p-5 flex flex-col hover:bg-gray-50 transition">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <p class="text-sm font-bold text-gray-900 truncate max-w-[180px]">{{ venda.produtos_resumo }}</p>
+                    <p class="text-[11px] text-gray-400 font-mono mt-0.5">ID: {{ venda.pedido_id_nuvemshop }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-black text-gold">+ R$ {{ "%.2f"|format(venda.valor_comissao) }}</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-end mt-1">
+                <p class="text-xs text-gray-500 font-medium">{{ venda.data_venda.strftime('%d/%m/%Y') }}</p>
+                {% if venda.status_pagamento == 'pago' %}
+                <span class="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase">Pago</span>
                 {% else %}
-                <tr>
-                    <td colspan="6" class="p-10 text-center text-gray-400 italic">Nenhuma venda registrada no sistema até o momento.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                <span class="bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase">Pendente</span>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="p-10 text-center text-sm text-gray-400 font-medium">Nenhuma venda registrada até o momento.</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}
 

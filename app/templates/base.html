@@ -2,60 +2,99 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Ellic | Gestão{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}Ellic | App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       tailwind.config = {
         theme: {
-          extend: { colors: { navy: { DEFAULT: '#0B1B3D', light: '#1A2E5A' }, gold: { DEFAULT: '#C5A059', hover: '#D4AF37' } } }
+          extend: { 
+            colors: { navy: { DEFAULT: '#0B1B3D', light: '#1A2E5A' }, gold: { DEFAULT: '#C5A059', hover: '#D4AF37' } },
+            boxShadow: { 'ios': '0 8px 30px rgba(0,0,0,0.04)', 'ios-heavy': '0 20px 40px rgba(0,0,0,0.08)' }
+          }
         }
       }
     </script>
     <style>
-        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        /* Efeito Vidro iOS */
+        .glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); }
+        .glass-nav { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.05); }
+        
+        /* Oculta scrollbars nativas mas permite rolagem */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Suavização de interações mobile */
+        * { -webkit-tap-highlight-color: transparent; }
+        body { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans tracking-wide">
+<body class="bg-[#F2F2F7] min-h-screen text-gray-900 font-sans tracking-wide antialiased">
+    
     {% if current_user.is_authenticated and not current_user.senha_temporaria %}
-    <nav class="bg-navy shadow-xl">
+    <nav class="bg-navy shadow-lg sticky top-0 z-40 hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <a href="#" class="text-2xl font-bold text-gold tracking-widest uppercase flex-shrink-0">ELLIC</a>
-                
-                <!-- Menu de Navegação -->
-                <div class="flex space-x-6 items-center text-sm font-medium overflow-x-auto hide-scrollbar pl-4 w-full justify-end">
+                <a href="#" class="text-xl font-bold text-gold tracking-widest uppercase">ELLIC</a>
+                <div class="flex space-x-6 items-center text-sm font-medium">
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Geral</a>
-                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition whitespace-nowrap">Afiliados</a>
-                    <a href="{{ url_for('admin.vendas') }}" class="text-white hover:text-gold transition whitespace-nowrap">Vendas</a>
-                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition whitespace-nowrap">Financeiro</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition">Visão Geral</a>
+                    <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition">Afiliados</a>
+                    <a href="{{ url_for('admin.vendas') }}" class="text-white hover:text-gold transition">Vendas</a>
+                    <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition">Financeiro</a>
                     {% else %}
-                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition whitespace-nowrap">Visão Estratégica</a>
-                    <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition whitespace-nowrap">Gerador de Links</a>
-                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition whitespace-nowrap">Extrato de Vendas</a>
-                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition whitespace-nowrap">Recebimentos</a>
+                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Visão Estratégica</a>
+                    <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition">Links</a>
+                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Extrato</a>
+                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition">Recebimentos</a>
                     {% endif %}
-                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded transition whitespace-nowrap ml-2">Sair</a>
+                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded-full transition ml-2">Sair</a>
                 </div>
             </div>
         </div>
     </nav>
     {% endif %}
-    
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 overflow-x-hidden">
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 md:pb-10 overflow-x-hidden">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="bg-navy/10 border-l-4 border-navy text-navy p-4 mb-6 rounded shadow-sm">
-                    <p class="font-semibold">{{ messages[0] }}</p>
+                <div class="bg-white border-l-4 border-navy text-navy p-4 mb-6 rounded-2xl shadow-ios font-medium text-sm animate-pulse">
+                    {{ messages[0] }}
                 </div>
             {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
+
+    {% if current_user.is_authenticated and current_user.role == 'parceiro' and not current_user.senha_temporaria %}
+    <div class="fixed bottom-0 left-0 w-full glass-nav pb-[env(safe-area-inset-bottom)] z-50 md:hidden">
+        <div class="flex justify-around items-center h-16 px-2">
+            <a href="{{ url_for('parceiros.dashboard') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.dashboard' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-semibold">Painel</span>
+            </a>
+            <a href="{{ url_for('parceiros.links') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.links' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <span class="text-[10px] font-semibold">Links</span>
+            </a>
+            <a href="{{ url_for('parceiros.vendas') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.vendas' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="text-[10px] font-semibold">Vendas</span>
+            </a>
+            <a href="{{ url_for('parceiros.recebimentos') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.recebimentos' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <span class="text-[10px] font-semibold">Pix</span>
+            </a>
+            <a href="{{ url_for('admin.logout') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-red-400 hover:text-red-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="text-[10px] font-semibold">Sair</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>
 
