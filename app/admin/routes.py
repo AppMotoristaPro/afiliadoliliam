@@ -27,7 +27,6 @@ def login():
         
     return render_template('admin/login.html')
 
-# Endpoint atualizado para o Onboarding Completo (Etapas)
 @admin_bp.route('/nova-senha', methods=['GET', 'POST'])
 @login_required
 def nova_senha():
@@ -40,7 +39,6 @@ def nova_senha():
         nova_senha = request.form.get('nova_senha')
         confirmacao = request.form.get('confirmacao')
         
-        # O Backend também valida a senha (além do JS no frontend)
         if len(nova_senha) < 8 or not re.search(r'[A-Z]', nova_senha) or not re.search(r'\d', nova_senha):
             flash('A senha não atende aos requisitos de segurança.')
             return render_template('admin/nova_senha.html', config=config)
@@ -49,7 +47,6 @@ def nova_senha():
             flash('As senhas não coincidem.')
             return render_template('admin/nova_senha.html', config=config)
             
-        # Atualização de Todos os Dados do Onboarding
         config.nome = request.form.get('nome')
         config.cpf = request.form.get('cpf')
         config.data_nascimento = request.form.get('data_nascimento')
@@ -128,13 +125,17 @@ def afiliados():
         db.session.flush()
         
         utm = f"ELLIC-{random.randint(1000, 9999)}"
-        # Admin preenche apenas o básico. O afiliado faz o resto no Onboarding.
+        
+        # Coleta a taxa de comissão definida no formulário (padrão 10.0 se vazio)
+        taxa_definida = request.form.get('taxa_comissao')
+        taxa_final = float(taxa_definida) if taxa_definida else 10.0
+        
         config = ParceiroConfig(
             usuario_id=novo_user.id, 
             nome=request.form.get('nome'), 
             cpf=request.form.get('cpf'),
             codigo_utm=utm, 
-            taxa_comissao=float(request.form.get('taxa', 10.0))
+            taxa_comissao=taxa_final
         )
         db.session.add(config)
         db.session.commit()
@@ -143,6 +144,34 @@ def afiliados():
         
     lista = ParceiroConfig.query.all()
     return render_template('admin/afiliados.html', afiliados=lista)
+
+@admin_bp.route('/afiliados/<int:id>/editar', methods=['POST'])
+@login_required
+def editar_afiliado(id):
+    if current_user.role != 'admin':
+        return redirect(url_for('parceiros.dashboard'))
+        
+    parceiro = ParceiroConfig.query.get_or_404(id)
+    
+    # Atualiza a comissão convertendo para número decimal
+    taxa_input = request.form.get('taxa_comissao')
+    if taxa_input:
+        try:
+            parceiro.taxa_comissao = float(taxa_input)
+        except ValueError:
+            flash('Valor de comissão inválido.')
+            return redirect(url_for('admin.afiliados'))
+            
+    # Permite editar também o nome e CPF se o administrador desejar corrigir algo
+    parceiro.nome = request.form.get('nome', parceiro.nome)
+    parceiro.cpf = request.form.get('cpf', parceiro.cpf)
+    parceiro.celular = request.form.get('celular', parceiro.celular)
+    parceiro.chave_pix = request.form.get('chave_pix', parceiro.chave_pix)
+    parceiro.endereco = request.form.get('endereco', parceiro.endereco)
+    
+    db.session.commit()
+    flash(f'Configurações de {parceiro.nome} atualizadas com sucesso!')
+    return redirect(url_for('admin.afiliados'))
 
 @admin_bp.route('/vendas')
 @login_required
