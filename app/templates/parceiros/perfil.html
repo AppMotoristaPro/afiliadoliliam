@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Meus Dados | Ellic{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-navy tracking-tight">Meus Dados</h1>
+    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Gestão de conta</p>
+</div>
+
+<div class="glass-panel p-6 rounded-3xl shadow-ios mb-6">
+    <form action="{{ url_for('parceiros.perfil') }}" method="POST" class="space-y-4">
+        
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">E-mail (Login)</label>
+            <input type="text" disabled value="{{ config.usuario.email }}" class="w-full px-5 py-4 bg-gray-100 text-gray-400 font-medium text-sm rounded-2xl outline-none cursor-not-allowed">
+        </div>
+
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Nome Completo</label>
+            <input type="text" name="nome" value="{{ config.nome }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">CPF</label>
+                <input type="text" name="cpf" value="{{ config.cpf or '' }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Nascimento</label>
+                <input type="text" name="data_nascimento" value="{{ config.data_nascimento or '' }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Celular</label>
+                <input type="text" name="celular" value="{{ config.celular or '' }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Chave Pix</label>
+                <input type="text" name="chave_pix" value="{{ config.chave_pix or '' }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+            </div>
+        </div>
+
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Endereço Completo</label>
+            <input type="text" name="endereco" value="{{ config.endereco or '' }}" class="w-full px-5 py-4 bg-white border border-gray-100 text-gray-900 font-medium text-sm rounded-2xl focus:ring-2 focus:ring-gold/40 outline-none transition-all shadow-sm">
+        </div>
+
+        <button type="submit" class="w-full bg-navy text-white font-bold py-4 rounded-2xl shadow-md active:scale-95 transition text-xs tracking-wide uppercase mt-4">Guardar Alterações</button>
+    </form>
+</div>
+{% endblock %}
+

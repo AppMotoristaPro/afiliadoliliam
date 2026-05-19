@@ -1,125 +1,69 @@
 {% extends "base.html" %}
-{% block title %}Financeiro | Ellic{% endblock %}
+{% block title %}Mesa Financeira | Ellic{% endblock %}
 {% block content %}
-<div class="mb-6 pt-2">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Financeiro</h1>
-    <p class="text-gray-500 text-sm mt-1 font-medium">Repasses e auditorias de caixa.</p>
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-navy tracking-tight">Mesa Financeira</h1>
+    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Gestão de Repasses</p>
 </div>
 
-<div class="bg-white p-6 md:p-8 rounded-3xl shadow-ios mb-8 relative overflow-hidden">
-    <div class="absolute -right-10 -top-10 w-40 h-40 bg-gold opacity-5 rounded-full blur-3xl"></div>
-    
-    <h3 class="text-lg font-bold text-gray-900 mb-6 tracking-tight">Comissões a Pagar</h3>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="glass-panel p-6 md:p-8 rounded-3xl shadow-ios mb-8">
+    <h3 class="text-sm font-bold text-navy mb-6 tracking-tight border-b border-gray-100 pb-2">Comissões a Liquidar</h3>
+    <div class="overflow-x-auto hide-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[700px]">
             <thead>
-                <tr class="text-gray-400 text-xs uppercase tracking-widest border-b border-gray-100">
-                    <th class="pb-4 font-bold">Afiliado</th>
-                    <th class="pb-4 font-bold">Vendas</th>
+                <tr class="text-gray-400 text-[10px] uppercase tracking-widest border-b border-gray-50">
+                    <th class="pb-4 font-bold">Parceiro</th>
                     <th class="pb-4 font-bold">Comissão Devida</th>
-                    <th class="pb-4 font-bold">Chave PIX</th>
-                    <th class="pb-4 text-right font-bold">Ação</th>
+                    <th class="pb-4 font-bold">Chave PIX Destino</th>
+                    <th class="pb-4 text-right font-bold">Ação Operacional</th>
                 </tr>
             </thead>
-            <tbody class="text-gray-700 text-sm divide-y divide-gray-50">
+            <tbody class="text-gray-700 text-sm divide-y divide-gray-50/50">
                 {% for item in financeiro %}
-                <tr class="hover:bg-gray-50/50 transition">
-                    <td class="py-5 pr-4">
-                        <button onclick="abrirExtrato({{ item.extrato | tojson | forceescape }})" class="font-bold text-navy hover:text-gold transition outline-none">{{ item.parceiro.nome }}</button>
-                        <p class="text-[10px] text-gray-400 font-medium mt-1">Última: {{ item.ultima_data.strftime('%d/%m/%Y') }}</p>
-                    </td>
-                    <td class="py-5 pr-4 text-gray-500 font-medium">R$ {{ "%.2f"|format(item.total_venda) }}</td>
+                <tr class="hover:bg-white/50 transition">
+                    <td class="py-5 pr-4 font-bold text-navy">{{ item.parceiro.nome }}</td>
                     <td class="py-5 pr-4 font-black text-gold text-lg">R$ {{ "%.2f"|format(item.total_comissao) }}</td>
                     <td class="py-5 pr-4">
-                        <span class="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-mono font-medium">{{ item.parceiro.chave_pix or 'Não informada' }}</span>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-mono font-medium">{{ item.parceiro.chave_pix or 'Não fornecida' }}</span>
                     </td>
                     <td class="py-5 text-right">
-                        <form action="{{ url_for('admin.pagar_comissao', id=item.parceiro.id) }}" method="POST" onsubmit="return confirm('Confirma a baixa deste repasse via PIX?');">
-                            <button type="submit" class="bg-navy hover:bg-navy-light text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition active:scale-95 tracking-wide uppercase">Liquidar</button>
+                        <form action="{{ url_for('admin.pagar_comissao', id=item.parceiro.id) }}" method="POST" onsubmit="return confirm('Confirma a liquidação total deste repasse?');">
+                            <button type="submit" class="bg-navy hover:bg-navy-light text-white text-xs px-6 py-3 rounded-xl font-bold shadow-md transition active:scale-95 uppercase tracking-wide">Liquidar</button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="py-10 text-center text-gray-400 font-medium">Tudo zerado! Nenhum repasse pendente.</td></tr>
+                <tr><td colspan="4" class="py-10 text-center text-sm text-gray-400 font-medium">Não há repasses pendentes.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="bg-white p-6 md:p-8 rounded-3xl shadow-ios mb-8">
-    <h3 class="text-lg font-bold text-gray-900 mb-6 tracking-tight">Histórico de Liquidações</h3>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="glass-panel p-6 md:p-8 rounded-3xl shadow-ios border border-gray-100">
+    <h3 class="text-sm font-bold text-navy mb-6 tracking-tight border-b border-gray-100 pb-2">Histórico de Liquidações</h3>
+    <div class="overflow-x-auto hide-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
-                <tr class="text-gray-400 text-xs uppercase tracking-widest border-b border-gray-100">
-                    <th class="pb-4 font-bold">Data</th>
+                <tr class="text-gray-400 text-[10px] uppercase tracking-widest border-b border-gray-50">
+                    <th class="pb-4 font-bold">Data do Repasse</th>
                     <th class="pb-4 font-bold">Beneficiário</th>
-                    <th class="pb-4 font-bold">Valor</th>
-                    <th class="pb-4 font-bold">PIX Destino</th>
-                    <th class="pb-4 text-center font-bold">Status</th>
+                    <th class="pb-4 text-right font-bold">Valor Transferido</th>
                 </tr>
             </thead>
-            <tbody class="text-gray-600 text-sm divide-y divide-gray-50">
+            <tbody class="text-gray-600 text-sm divide-y divide-gray-50/50">
                 {% for pg in historico %}
-                <tr class="hover:bg-gray-50/50 transition">
-                    <td class="py-4 pr-4 font-medium">{{ pg.data_pagamento.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td class="py-4 pr-4 font-bold text-gray-900">{{ pg.parceiro.nome }}</td>
-                    <td class="py-4 pr-4 font-black text-green-600">R$ {{ "%.2f"|format(pg.valor_pago) }}</td>
-                    <td class="py-4 pr-4"><span class="font-mono text-xs bg-gray-50 px-2 py-1 rounded">{{ pg.chave_pix_utilizada }}</span></td>
-                    <td class="py-4 text-center">
-                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest">Enviado</span>
-                    </td>
+                <tr class="hover:bg-white/50 transition">
+                    <td class="py-4 pr-4 font-medium text-xs">{{ pg.data_pagamento.strftime('%d/%m/%Y às %H:%M') }}</td>
+                    <td class="py-4 pr-4 font-bold text-gray-900">{{ pg.parceiro.nome }}<br><span class="text-[10px] text-gray-400 font-mono font-normal">Pix: {{ pg.chave_pix_utilizada }}</span></td>
+                    <td class="py-4 text-right font-black text-green-600">R$ {{ "%.2f"|format(pg.valor_pago) }}</td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="py-10 text-center text-gray-400 font-medium">Nenhum histórico de pagamentos.</td></tr>
+                <tr><td colspan="3" class="py-10 text-center text-sm text-gray-400 font-medium">Nenhum histórico de pagamentos registado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
-<div id="modalExtrato" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-    <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-ios-heavy max-h-[85vh] flex flex-col">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-900 tracking-tight">Detalhamento</h2>
-            <button onclick="document.getElementById('modalExtrato').classList.add('hidden')" class="text-gray-400 hover:text-gray-900 text-2xl font-bold p-2 transition">&times;</button>
-        </div>
-        <div class="overflow-y-auto flex-grow pr-2 hide-scrollbar">
-            <ul class="divide-y divide-gray-100" id="tabelaExtrato">
-                </ul>
-        </div>
-    </div>
-</div>
-
-<script>
-    function abrirExtrato(extrato) {
-        let html = '';
-        extrato.forEach(v => {
-            let dataArray = v.data_venda.split('T')[0].split('-');
-            let dataFormatada = `${dataArray[2]}/${dataArray[1]}/${dataArray[0]}`;
-            
-            html += `
-                <li class="py-4 flex flex-col hover:bg-gray-50 transition rounded-xl px-2">
-                    <div class="flex justify-between items-start mb-1">
-                        <div>
-                            <p class="text-sm font-bold text-gray-900 truncate max-w-[200px]" title="${v.produtos_resumo}">${v.produtos_resumo}</p>
-                            <p class="text-[11px] text-gray-400 font-mono mt-0.5">ID: ${v.pedido_id_nuvemshop}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm font-black text-gold">R$ ${v.valor_comissao.toFixed(2)}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-end mt-1">
-                        <p class="text-xs text-gray-500 font-medium">${dataFormatada}</p>
-                        <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Bruto: R$ ${v.valor_total.toFixed(2)}</p>
-                    </div>
-                </li>
-            `;
-        });
-        document.getElementById('tabelaExtrato').innerHTML = html;
-        document.getElementById('modalExtrato').classList.remove('hidden');
-    }
-</script>
 {% endblock %}
 

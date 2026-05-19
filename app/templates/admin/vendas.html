@@ -1,45 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Vendas | Ellic{% endblock %}
+{% block title %}Vendas Globais | Ellic{% endblock %}
 {% block content %}
-<div class="mb-6 pt-2">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Histórico de Vendas</h1>
-    <p class="text-gray-500 text-sm mt-1 font-medium">Acompanhamento de conversões da loja.</p>
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-navy tracking-tight">Auditoria de Vendas</h1>
+    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Registo Global de Conversões</p>
 </div>
 
-<div class="bg-white rounded-3xl shadow-ios overflow-hidden mb-8">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="glass-panel rounded-3xl shadow-ios overflow-hidden mb-8">
+    <div class="overflow-x-auto hide-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[800px]">
             <thead>
-                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest border-b border-gray-100">
+                <tr class="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest border-b border-gray-100">
                     <th class="p-5 font-bold">Data</th>
-                    <th class="p-5 font-bold">Afiliado</th>
+                    <th class="p-5 font-bold">Parceiro Responsável</th>
                     <th class="p-5 font-bold">Pedido</th>
-                    <th class="p-5 font-bold">Produtos</th>
-                    <th class="p-5 font-bold">Valor</th>
+                    <th class="p-5 font-bold">Produto / Venda</th>
                     <th class="p-5 font-bold text-right">Comissão</th>
-                    <th class="p-5 font-bold text-center">Status</th>
                 </tr>
             </thead>
-            <tbody class="text-gray-700 text-sm divide-y divide-gray-50">
+            <tbody class="text-gray-700 text-sm divide-y divide-gray-100/50">
                 {% for venda in vendas %}
-                <tr class="hover:bg-gray-50/50 transition">
-                    <td class="p-5 whitespace-nowrap text-gray-600 font-medium">{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
-                    <td class="p-5 font-bold text-gray-900">{{ venda.parceiro.nome }}</td>
-                    <td class="p-5 font-mono text-xs text-gray-500">{{ venda.pedido_id_nuvemshop }}</td>
-                    <td class="p-5 italic text-gray-500 truncate max-w-[150px]" title="{{ venda.produtos_resumo }}">{{ venda.produtos_resumo }}</td>
-                    <td class="p-5 font-semibold">R$ {{ "%.2f"|format(venda.valor_total) }}</td>
-                    <td class="p-5 text-right font-black text-gold">R$ {{ "%.2f"|format(venda.valor_comissao) }}</td>
-                    <td class="p-5 text-center">
+                <tr class="hover:bg-white/50 transition">
+                    <td class="p-5 text-gray-500 font-medium text-xs">{{ venda.data_venda.strftime('%d/%m/%Y') }}</td>
+                    <td class="p-5 font-bold text-navy">{{ venda.parceiro.nome }}</td>
+                    <td class="p-5 font-mono text-xs text-gray-400">#{{ venda.pedido_id_nuvemshop }}</td>
+                    <td class="p-5">
+                        <p class="font-bold text-gray-900 text-xs truncate max-w-[200px]">{{ venda.produtos_resumo }}</p>
+                        <p class="text-[10px] text-gray-500 mt-0.5">R$ {{ "%.2f"|format(venda.valor_total) }}</p>
+                    </td>
+                    <td class="p-5 text-right">
+                        <p class="font-black text-gold">R$ {{ "%.2f"|format(venda.valor_comissao) }}</p>
                         {% if venda.status_pagamento == 'pago' %}
-                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase">Pagas</span>
+                        <span class="inline-block mt-1 bg-green-50 text-green-700 text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-green-100">Paga</span>
                         {% else %}
-                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase">Pendentes</span>
+                        <span class="inline-block mt-1 bg-amber-50 text-amber-700 text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-amber-100">Pendente</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="p-10 text-center text-gray-400 font-medium">Nenhuma venda registrada.</td>
+                    <td colspan="5" class="p-10 text-center text-sm text-gray-400 font-medium">Nenhuma venda registada até ao momento no sistema.</td>
                 </tr>
                 {% endfor %}
             </tbody>

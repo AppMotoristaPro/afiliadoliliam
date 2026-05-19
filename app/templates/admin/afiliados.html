@@ -1,32 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Afiliados | Ellic{% endblock %}
 {% block content %}
-<div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pt-2 gap-4">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Gestão de Afiliados</h1>
-    <button onclick="document.getElementById('modalNovo').classList.remove('hidden')" class="bg-navy hover:bg-navy-light text-white font-bold px-6 py-3 rounded-2xl shadow-ios transition active:scale-95 text-sm tracking-wide">
-        + NOVO AFILIADO
+<div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl font-black text-navy tracking-tight">Gestão de Parceiros</h1>
+    </div>
+    <button onclick="document.getElementById('modalNovo').classList.remove('hidden')" class="bg-navy hover:bg-navy-light text-white font-bold px-6 py-3.5 rounded-2xl shadow-md transition active:scale-95 text-xs tracking-wide uppercase">
+        + Liberar Acesso
     </button>
 </div>
 
-<div class="bg-white rounded-3xl shadow-ios overflow-hidden mb-8">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="glass-panel rounded-3xl shadow-ios overflow-hidden mb-8">
+    <div class="overflow-x-auto hide-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[800px]">
             <thead>
-                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest border-b border-gray-100">
-                    <th class="p-5 font-bold">Nome</th>
-                    <th class="p-5 font-bold">ID Afiliado</th>
+                <tr class="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest border-b border-gray-100">
+                    <th class="p-5 font-bold">Parceiro</th>
+                    <th class="p-5 font-bold">CPF</th>
+                    <th class="p-5 font-bold">Contato</th>
                     <th class="p-5 font-bold">Comissão</th>
-                    <th class="p-5 font-bold text-right">Ações</th>
+                    <th class="p-5 font-bold text-right">Ação</th>
                 </tr>
             </thead>
-            <tbody class="text-gray-700 text-sm divide-y divide-gray-50">
+            <tbody class="text-gray-700 text-sm divide-y divide-gray-100/50">
                 {% for af in afiliados %}
-                <tr class="hover:bg-gray-50/50 transition">
-                    <td class="p-5 font-bold text-gray-900">{{ af.nome }}</td>
-                    <td class="p-5"><span class="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold">{{ af.codigo_utm }}</span></td>
-                    <td class="p-5 font-semibold text-gold">{{ af.taxa_comissao }}%</td>
+                <tr class="hover:bg-white/50 transition">
+                    <td class="p-5">
+                        <p class="font-bold text-navy">{{ af.nome }}</p>
+                        <p class="text-[10px] text-gray-400 font-mono mt-0.5">{{ af.codigo_utm }}</p>
+                    </td>
+                    <td class="p-5 font-mono text-xs text-gray-500">{{ af.cpf or 'Pendente' }}</td>
+                    <td class="p-5">
+                        <p class="font-medium text-xs text-gray-900">{{ af.celular or 'Pendente' }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">{{ af.usuario.email }}</p>
+                    </td>
+                    <td class="p-5 font-black text-gold">{{ af.taxa_comissao }}%</td>
                     <td class="p-5 text-right">
-                        <button onclick="abrirEdit('{{ af.id }}', '{{ af.usuario.email }}', '{{ af.celular or '' }}', '{{ af.chave_pix or '' }}')" class="text-navy hover:text-gold font-bold text-xs uppercase tracking-wider transition outline-none">Editar</button>
+                        <button onclick="abrirDetalhes('{{ af.nome }}', '{{ af.cpf }}', '{{ af.celular }}', '{{ af.endereco }}', '{{ af.chave_pix }}')" class="text-navy bg-white border border-gray-200 font-bold text-[10px] uppercase tracking-widest transition shadow-sm px-4 py-2 rounded-xl active:scale-95">Detalhes</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -35,71 +45,60 @@
     </div>
 </div>
 
-<div id="modalNovo" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-ios-heavy">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Adicionar Afiliado</h2>
+<div id="modalNovo" class="hidden fixed inset-0 z-50 flex justify-center items-center p-4">
+    <div onclick="document.getElementById('modalNovo').classList.add('hidden')" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-ios-heavy relative z-10">
+        <h2 class="text-xl font-black text-navy mb-1 tracking-tight">Liberar Acesso</h2>
+        <p class="text-gray-400 text-xs font-medium mb-6">Registe o básico. O parceiro completará o perfil no primeiro login.</p>
+        
         <form action="{{ url_for('admin.afiliados') }}" method="POST" class="space-y-4">
-            <div>
-                <input type="text" name="nome" required placeholder="Nome Completo" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-400 font-medium">
-            </div>
-            <div>
-                <input type="email" name="email" required placeholder="E-mail" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-400 font-medium">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <input type="number" step="0.1" name="taxa" value="10.0" placeholder="Comissão (%)" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all font-medium">
-                </div>
-                <div>
-                    <input type="text" name="celular" placeholder="Celular" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-400 font-medium">
-                </div>
-            </div>
-            <div>
-                <input type="text" name="chave_pix" placeholder="Chave PIX" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-400 font-medium">
-            </div>
-            <div class="flex space-x-3 mt-8">
-                <button type="button" onclick="document.getElementById('modalNovo').classList.add('hidden')" class="w-full py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all active:scale-95">Cancelar</button>
-                <button type="submit" class="w-full py-4 bg-navy text-white font-bold rounded-2xl hover:bg-navy-light transition-all active:scale-95 shadow-md">Salvar</button>
+            <input type="text" name="nome" required placeholder="Nome Completo" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 border border-gray-100 text-sm font-medium transition-all">
+            <input type="email" name="email" required placeholder="E-mail de Acesso" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 border border-gray-100 text-sm font-medium transition-all">
+            <input type="text" name="cpf" required placeholder="CPF" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 border border-gray-100 text-sm font-medium transition-all">
+            
+            <div class="flex space-x-3 mt-6">
+                <button type="button" onclick="document.getElementById('modalNovo').classList.add('hidden')" class="w-full py-4 bg-gray-100 text-gray-500 font-bold rounded-2xl transition-all text-xs uppercase tracking-wide">Cancelar</button>
+                <button type="submit" class="w-full py-4 bg-navy text-white font-bold rounded-2xl shadow-md active:scale-95 transition-all text-xs uppercase tracking-wide">Gerar Convite</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="modalEdit" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-ios-heavy">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Editar Afiliado</h2>
-        <form id="formEdit" method="POST" class="space-y-4">
-            <div>
-                <input type="email" id="editEmail" name="email" required placeholder="E-mail" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all font-medium">
+<div id="modalDetalhes" class="hidden fixed inset-0 z-50 flex justify-center items-center p-4">
+    <div onclick="document.getElementById('modalDetalhes').classList.add('hidden')" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-ios-heavy relative z-10">
+        <button onclick="document.getElementById('modalDetalhes').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 text-2xl font-bold">&times;</button>
+        <h2 class="text-lg font-black text-navy mb-6 tracking-tight" id="detNome">Nome</h2>
+        
+        <div class="space-y-3">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">CPF</p>
+                <p class="font-mono text-gray-900 text-sm font-medium" id="detCpf"></p>
             </div>
-            <div>
-                <input type="text" id="editCelular" name="celular" placeholder="Celular" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all font-medium">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Contacto</p>
+                <p class="text-gray-900 text-sm font-medium" id="detCelular"></p>
             </div>
-            <div>
-                <input type="text" id="editPix" name="chave_pix" placeholder="Chave PIX" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 outline-none transition-all font-medium">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Endereço Completo</p>
+                <p class="text-gray-600 text-sm font-medium leading-relaxed" id="detEndereco"></p>
             </div>
-            
-            <div class="p-4 bg-red-50 rounded-2xl mt-4">
-                <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="checkbox" name="resetar_senha" class="form-checkbox h-5 w-5 text-red-500 rounded border-red-300 focus:ring-red-500">
-                    <span class="text-red-700 font-bold text-sm tracking-wide">Resetar senha para Temporária</span>
-                </label>
+            <div class="bg-gold/10 p-4 rounded-xl border border-gold/20">
+                <p class="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Chave Pix de Repasse</p>
+                <p class="font-mono text-navy font-bold text-sm" id="detPix"></p>
             </div>
-
-            <div class="flex space-x-3 mt-8">
-                <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')" class="w-full py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all active:scale-95">Cancelar</button>
-                <button type="submit" class="w-full py-4 bg-navy text-white font-bold rounded-2xl hover:bg-navy-light transition-all active:scale-95 shadow-md">Atualizar</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
-    function abrirEdit(id, email, celular, pix) {
-        document.getElementById('editEmail').value = email;
-        document.getElementById('editCelular').value = celular;
-        document.getElementById('editPix').value = pix;
-        document.getElementById('formEdit').action = '/admin/afiliado/' + id + '/editar';
-        document.getElementById('modalEdit').classList.remove('hidden');
+    function abrirDetalhes(nome, cpf, celular, endereco, pix) {
+        document.getElementById('detNome').innerText = nome;
+        document.getElementById('detCpf').innerText = cpf || 'Pendente (A aguardar Onboarding)';
+        document.getElementById('detCelular').innerText = celular || 'Pendente (A aguardar Onboarding)';
+        document.getElementById('detEndereco').innerText = endereco || 'Pendente (A aguardar Onboarding)';
+        document.getElementById('detPix').innerText = pix || 'Pendente (A aguardar Onboarding)';
+        document.getElementById('modalDetalhes').classList.remove('hidden');
     }
 </script>
 {% endblock %}

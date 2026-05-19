@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-8 rounded-3xl shadow-ios border border-gray-100">
+    <h2 class="text-2xl font-black text-navy mb-6">Finalize seu cadastro</h2>
+    <form method="POST" action="{{ url_for('admin.nova_senha') }}" id="formCadastro">
+        
+        <div id="step1" class="space-y-4">
+            <input type="text" name="nome" value="{{ config.nome }}" required placeholder="Nome Completo" class="w-full p-4 bg-gray-50 rounded-xl">
+            <input type="text" name="cpf" placeholder="CPF" class="w-full p-4 bg-gray-50 rounded-xl">
+            <input type="date" name="data_nascimento" class="w-full p-4 bg-gray-50 rounded-xl">
+            <input type="text" name="chave_pix" placeholder="Chave Pix" class="w-full p-4 bg-gray-50 rounded-xl">
+            <button type="button" onclick="go(2)" class="w-full bg-navy text-white p-4 rounded-xl font-bold">Continuar</button>
+        </div>
+
+        <div id="step2" class="hidden space-y-4">
+            <input type="text" id="cep" name="cep" placeholder="CEP" class="w-full p-4 bg-gray-50 rounded-xl">
+            <input type="text" id="endereco" name="endereco" placeholder="Endereço" class="w-full p-4 bg-gray-50 rounded-xl">
+            <button type="button" onclick="go(3)" class="w-full bg-navy text-white p-4 rounded-xl font-bold">Continuar</button>
+        </div>
+
+        <div id="step3" class="hidden space-y-4">
+            <input type="password" id="p1" name="nova_senha" placeholder="Senha" class="w-full p-4 bg-gray-50 rounded-xl">
+            <input type="password" id="p2" name="confirmacao" placeholder="Confirmar Senha" class="w-full p-4 bg-gray-50 rounded-xl">
+            <ul class="text-xs text-gray-400 space-y-1">
+                <li id="r1">● 8 caracteres</li>
+                <li id="r2">● Maiúscula e Minúscula</li>
+                <li id="r3">● Número</li>
+                <li id="r4">● Senhas iguais</li>
+            </ul>
+            <button type="submit" id="btnFinal" disabled class="w-full bg-gray-300 text-white p-4 rounded-xl font-bold">Finalizar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function go(s) {
+        document.querySelectorAll('.etapa').forEach(e => e.classList.add('hidden'));
+        document.getElementById('step'+s).classList.remove('hidden');
+    }
+    const p1 = document.getElementById('p1'), p2 = document.getElementById('p2'), btn = document.getElementById('btnFinal');
+    p1.oninput = p2.oninput = () => {
+        const v = p1.value;
+        const ok = v.length >= 8 && /[A-Z]/.test(v) && /[a-z]/.test(v) && /\d/.test(v) && v === p2.value;
+        btn.disabled = !ok;
+        btn.className = ok ? "w-full bg-navy text-white p-4 rounded-xl font-bold" : "w-full bg-gray-300 text-white p-4 rounded-xl font-bold";
+    };
+    document.getElementById('cep').onblur = function() {
+        fetch(`https://viacep.com.br/ws/${this.value}/json/`).then(r => r.json()).then(d => {
+            document.getElementById('endereco').value = `${d.logradouro}, ${d.bairro}, ${d.localidade}`;
+        });
+    };
+</script>
+{% endblock %}
+

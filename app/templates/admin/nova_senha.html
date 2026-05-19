@@ -1,27 +1,101 @@
 {% extends "base.html" %}
-{% block title %}Segurança | Ellic{% endblock %}
+{% block title %}Bem-vindo | Ellic{% endblock %}
 {% block content %}
-<div class="min-h-[85vh] flex flex-col justify-center items-center">
-    
-    <div class="text-center mb-8 px-4">
-        <div class="w-16 h-16 bg-navy text-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-900 tracking-wide">Atualize sua Senha</h2>
-        <p class="text-gray-500 mt-2 text-sm font-medium">Para sua segurança, crie uma senha definitiva antes de prosseguir.</p>
+<div class="max-w-xl mx-auto py-6">
+    <div class="text-center mb-8">
+        <h2 class="text-2xl font-black text-navy uppercase tracking-tight">Finalize seu Cadastro</h2>
+        <p class="text-gray-500 text-sm font-medium mt-1">Olá, {{ config.nome.split()[0] }}. Siga os passos para ativar seu painel.</p>
     </div>
 
-    <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-ios-heavy">
-        <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="space-y-5">
-            <div>
-                <input type="password" name="nova_senha" required placeholder="Nova Senha" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 focus:border-gold outline-none transition-all placeholder-gray-400 font-medium">
+    <form method="POST" action="{{ url_for('admin.nova_senha') }}" class="bg-white p-8 rounded-3xl shadow-ios border border-gray-100">
+        
+        <div id="step1" class="space-y-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Etapa 1: Pessoal</h3>
+            <input type="text" name="nome" value="{{ config.nome }}" required placeholder="Nome Completo" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <input type="text" name="cpf" value="{{ config.cpf or '' }}" required placeholder="CPF" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <input type="text" name="data_nascimento" placeholder="Data de Nascimento (DD/MM/AAAA)" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <input type="text" name="chave_pix" placeholder="Chave PIX de Repasse" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <button type="button" onclick="nextStep(2)" class="w-full bg-navy text-white font-bold py-4 rounded-2xl shadow-md mt-4">Continuar</button>
+        </div>
+
+        <div id="step2" class="hidden space-y-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Etapa 2: Endereço</h3>
+            <input type="text" id="cep" name="cep" placeholder="CEP" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <input type="text" id="logradouro" name="logradouro" placeholder="Endereço" readonly class="w-full px-5 py-4 bg-gray-100 text-gray-500 rounded-2xl outline-none font-medium text-sm">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" name="numero" placeholder="Número" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+                <input type="text" id="bairro" name="bairro" placeholder="Bairro" readonly class="w-full px-5 py-4 bg-gray-100 text-gray-500 rounded-2xl outline-none font-medium text-sm">
             </div>
-            <div>
-                <input type="password" name="confirmacao" required placeholder="Confirme a Senha" class="w-full px-5 py-4 bg-gray-100 text-gray-900 rounded-2xl focus:bg-white focus:ring-2 focus:ring-gold/50 focus:border-gold outline-none transition-all placeholder-gray-400 font-medium">
+            <input type="text" id="cidade" name="cidade" placeholder="Cidade" readonly class="w-full px-5 py-4 bg-gray-100 text-gray-500 rounded-2xl outline-none font-medium text-sm">
+            <div class="flex space-x-3 mt-4">
+                <button type="button" onclick="nextStep(1)" class="w-full bg-gray-100 text-gray-600 font-bold py-4 rounded-2xl">Voltar</button>
+                <button type="button" onclick="nextStep(3)" class="w-full bg-navy text-white font-bold py-4 rounded-2xl shadow-md">Continuar</button>
             </div>
-            <button type="submit" class="w-full bg-navy hover:bg-navy-light text-white font-bold py-4 rounded-2xl shadow-lg transition-all tracking-wide mt-2 active:scale-95">SALVAR E ENTRAR</button>
-        </form>
-    </div>
+        </div>
+
+        <div id="step3" class="hidden space-y-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Etapa 3: Segurança</h3>
+            <input type="password" id="pass1" name="nova_senha" required placeholder="Nova Senha" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            <input type="password" id="pass2" name="confirmacao" required placeholder="Confirme a Senha" class="w-full px-5 py-4 bg-gray-50 text-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-gold/50 font-medium text-sm">
+            
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-4">
+                <p class="text-[11px] font-bold text-navy uppercase mb-2">Requisitos:</p>
+                <ul class="text-xs font-medium space-y-1">
+                    <li id="req-len" class="text-gray-400 transition-colors">● Mínimo 8 caracteres</li>
+                    <li id="req-upper" class="text-gray-400 transition-colors">● Uma letra maiúscula</li>
+                    <li id="req-num" class="text-gray-400 transition-colors">● Um número</li>
+                    <li id="req-match" class="text-gray-400 transition-colors">● As senhas são iguais</li>
+                </ul>
+            </div>
+            
+            <div class="flex space-x-3 mt-4">
+                <button type="button" onclick="nextStep(2)" class="w-full bg-gray-100 text-gray-600 font-bold py-4 rounded-2xl">Voltar</button>
+                <button type="submit" id="btnFinal" disabled class="w-full bg-gray-300 text-white font-bold py-4 rounded-2xl transition-all">Finalizar</button>
+            </div>
+        </div>
+    </form>
 </div>
+
+<script>
+    function nextStep(s) {
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step3').classList.add('hidden');
+        document.getElementById('step' + s).classList.remove('hidden');
+    }
+    
+    // Auto-Complete ViaCEP
+    document.getElementById('cep').addEventListener('blur', function() {
+        let cep = this.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('logradouro').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade + ' - ' + data.uf;
+                    }
+                });
+        }
+    });
+
+    // Validação Real-Time de Senha
+    const p1 = document.getElementById('pass1'), p2 = document.getElementById('pass2'), btn = document.getElementById('btnFinal');
+    function checkPass() {
+        const v1 = p1.value, v2 = p2.value;
+        const c1 = v1.length >= 8, c2 = /[A-Z]/.test(v1), c3 = /\d/.test(v1), c4 = (v1 === v2 && v1 !== "");
+        
+        document.getElementById('req-len').className = c1 ? "text-green-500 transition-colors" : "text-gray-400 transition-colors";
+        document.getElementById('req-upper').className = c2 ? "text-green-500 transition-colors" : "text-gray-400 transition-colors";
+        document.getElementById('req-num').className = c3 ? "text-green-500 transition-colors" : "text-gray-400 transition-colors";
+        document.getElementById('req-match').className = c4 ? "text-green-500 transition-colors" : "text-gray-400 transition-colors";
+        
+        const isValid = c1 && c2 && c3 && c4;
+        btn.disabled = !isValid;
+        btn.className = isValid ? "w-full bg-navy text-white font-bold py-4 rounded-2xl shadow-md transition-all" : "w-full bg-gray-300 text-white font-bold py-4 rounded-2xl transition-all";
+    }
+    p1.addEventListener('input', checkPass); p2.addEventListener('input', checkPass);
+</script>
 {% endblock %}
 

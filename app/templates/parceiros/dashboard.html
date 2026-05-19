@@ -1,47 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Meu App | Ellic{% endblock %}
+{% block title %}Painel Estratégico | Ellic{% endblock %}
 {% block content %}
-<div class="mb-6 pt-2">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Painel</h1>
-    <p class="text-gray-500 text-sm mt-1 font-medium">Olá, {{ config.nome.split()[0] }}!</p>
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-navy tracking-tight">Painel Estratégico</h1>
+    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Bem-vinda, {{ config.nome.split()[0] }}</p>
 </div>
 
-<div class="bg-gradient-to-br from-[#0B1B3D] to-[#1A2E5A] rounded-3xl p-6 shadow-ios-heavy text-white mb-6 relative overflow-hidden">
-    <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
-    
-    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Comissão Liberada</p>
+<div class="bg-gradient-to-br from-[#0B1B3D] to-[#1A2E5A] rounded-3xl p-6 shadow-ios-heavy text-white mb-6 relative overflow-hidden border border-navy">
+    <p class="text-gold text-xs font-bold uppercase tracking-widest mb-1 opacity-90">Comissão Paga</p>
     <h2 class="text-4xl font-black tracking-tight mb-6">R$ {{ "%.2f"|format(saldo_pago) }}</h2>
-    
-    <div class="flex justify-between items-end border-t border-white/10 pt-4">
+    <div class="flex justify-between items-end border-t border-white/10 pt-4 text-xs font-bold">
         <div>
-            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Pendente</p>
-            <p class="font-semibold text-sm">R$ {{ "%.2f"|format(saldo_pendente) }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Saldo Pendente</p>
+            <p class="text-white">R$ {{ "%.2f"|format(saldo_pendente) }}</p>
         </div>
         <div class="text-right">
-            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">ID Afiliado</p>
-            <p class="font-mono text-sm opacity-80">{{ config.codigo_utm }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">ID Parceiro</p>
+            <p class="font-mono text-gold">{{ config.codigo_utm }}</p>
         </div>
     </div>
 </div>
 
-<div class="bg-white rounded-3xl p-6 shadow-ios mb-6">
-    <h3 class="text-lg font-bold text-gray-900 mb-1">Seu Link Principal</h3>
-    <p class="text-gray-500 text-xs font-medium mb-4">Poste na sua Bio ou Stories gerais.</p>
-    
-    <div class="flex items-center space-x-3 bg-gray-100 p-2 rounded-2xl">
-        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-transparent border-none text-gray-600 font-mono text-xs outline-none px-2 truncate">
-        <button onclick="copiarLink('linkLoja')" class="bg-white text-navy font-bold px-4 py-2 rounded-xl shadow-sm hover:shadow transition active:scale-95 text-xs whitespace-nowrap">Copiar</button>
+<div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="glass-panel p-5 rounded-2xl shadow-ios">
+        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Vendas Totais</p>
+        <p class="text-xl font-black text-navy">R$ {{ "%.2f"|format(vol_vendas) }}</p>
+    </div>
+    <div class="glass-panel p-5 rounded-2xl shadow-ios">
+        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Valor da Comissão</p>
+        <p class="text-xl font-black text-gold">{{ config.taxa_comissao }}%</p>
     </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4">
-    <div class="bg-white p-5 rounded-3xl shadow-ios">
-        <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Vendas</p>
-        <p class="text-xl font-bold text-gray-900">R$ {{ "%.2f"|format(vol_vendas) }}</p>
-    </div>
-    <div class="bg-white p-5 rounded-3xl shadow-ios">
-        <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Taxa</p>
-        <p class="text-xl font-bold text-gray-900">{{ config.taxa_comissao }}%</p>
+<div class="glass-panel p-5 rounded-2xl shadow-ios">
+    <h3 class="text-sm font-bold text-navy mb-1">Link de Divulgação Oficial</h3>
+    <p class="text-gray-400 text-xs font-medium mb-4">Seu link da loja Oficial, poste na sua bio!</p>
+    <div class="flex items-center space-x-2 bg-white p-1.5 rounded-xl border border-gray-100">
+        <input type="text" readonly value="https://www.ellicmodaevangelica.com.br/?utm_campaign={{ config.codigo_utm }}" id="linkLoja" class="w-full bg-transparent border-none text-gray-600 font-mono text-xs outline-none px-2 truncate">
+        <button onclick="copiarLink('linkLoja')" class="bg-gray-50 text-navy border border-gray-200 font-bold px-4 py-2 rounded-lg shadow-sm text-xs active:scale-95 transition">Copiar</button>
     </div>
 </div>
 

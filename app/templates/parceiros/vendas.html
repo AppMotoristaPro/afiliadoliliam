@@ -1,35 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Vendas | Ellic{% endblock %}
+{% block title %}Minhas Vendas | Ellic{% endblock %}
 {% block content %}
-<div class="mb-6 pt-2">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Extrato</h1>
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-navy tracking-tight">Minhas Vendas</h1>
 </div>
 
-<div class="bg-white rounded-3xl shadow-ios overflow-hidden mb-6">
-    <ul class="divide-y divide-gray-100">
+<div class="glass-panel rounded-3xl shadow-ios overflow-hidden">
+    <ul class="divide-y divide-gray-100/50">
         {% for venda in vendas %}
-        <li class="p-5 flex flex-col hover:bg-gray-50 transition">
-            <div class="flex justify-between items-start mb-2">
-                <div>
-                    <p class="text-sm font-bold text-gray-900 truncate max-w-[180px]">{{ venda.produtos_resumo }}</p>
-                    <p class="text-[11px] text-gray-400 font-mono mt-0.5">ID: {{ venda.pedido_id_nuvemshop }}</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-lg font-black text-gold">+ R$ {{ "%.2f"|format(venda.valor_comissao) }}</p>
+        <li class="p-4 flex items-center gap-4 hover:bg-white/50 transition">
+            <div class="w-14 h-16 bg-gray-100 rounded-xl flex-shrink-0 border border-gray-100 overflow-hidden flex items-center justify-center shadow-sm">
+                {% if venda.foto_produto_url %}
+                <img src="{{ venda.foto_produto_url }}" alt="Produto" class="w-full h-full object-cover">
+                {% else %}
+                <span class="text-gray-300 text-xl">👗</span>
+                {% endif %}
+            </div>
+            
+            <div class="flex-grow min-w-0">
+                <p class="text-xs font-bold text-navy truncate">{{ venda.produtos_resumo }}</p>
+                <p class="text-[10px] text-gray-400 font-medium mt-1">{{ venda.data_venda.strftime('%d/%m/%Y') }} • Pedido #{{ venda.pedido_id_nuvemshop }}</p>
+                
+                <div class="mt-2">
+                    {% if venda.status_pagamento == 'pago' %}
+                    <span class="bg-green-50 text-green-700 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-green-100">Paga</span>
+                    {% else %}
+                    <span class="bg-amber-50 text-amber-700 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border border-amber-100">Pendente</span>
+                    {% endif %}
                 </div>
             </div>
             
-            <div class="flex justify-between items-end mt-1">
-                <p class="text-xs text-gray-500 font-medium">{{ venda.data_venda.strftime('%d/%m/%Y') }}</p>
-                {% if venda.status_pagamento == 'pago' %}
-                <span class="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase">Pago</span>
-                {% else %}
-                <span class="bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase">Pendente</span>
-                {% endif %}
+            <div class="text-right flex-shrink-0 pl-2">
+                <p class="text-base font-black text-gold">+ R$ {{ "%.2f"|format(venda.valor_comissao) }}</p>
+                <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-wider">Venda: R$ {{ "%.2f"|format(venda.valor_total) }}</p>
             </div>
         </li>
         {% else %}
-        <li class="p-10 text-center text-sm text-gray-400 font-medium">Nenhuma venda registrada até o momento.</li>
+        <li class="p-10 text-center text-sm text-gray-400 font-medium">Nenhuma venda registada até o momento.</li>
         {% endfor %}
     </ul>
 </div>

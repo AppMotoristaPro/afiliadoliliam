@@ -26,8 +26,15 @@ class ParceiroConfig(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     codigo_utm = db.Column(db.String(50), unique=True, nullable=False)
     taxa_comissao = db.Column(db.Float, default=10.0)
+    
+    # Novos campos do Onboarding
+    cpf = db.Column(db.String(20), nullable=True)
+    data_nascimento = db.Column(db.String(20), nullable=True)
     chave_pix = db.Column(db.String(100), nullable=True)
     celular = db.Column(db.String(20), nullable=True)
+    cep = db.Column(db.String(20), nullable=True)
+    endereco = db.Column(db.String(255), nullable=True)
+    
     usuario = db.relationship('Usuario', backref=db.backref('configuracao', uselist=False))
 
 class LinkGerado(db.Model):
@@ -36,6 +43,7 @@ class LinkGerado(db.Model):
     parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
     url_original = db.Column(db.String(500), nullable=False)
     url_rastreada = db.Column(db.String(500), nullable=False)
+    nome_produto = db.Column(db.String(200), default="Produto Ellic")
     data_criacao = db.Column(db.DateTime, default=fuso_sao_paulo)
     parceiro = db.relationship('ParceiroConfig', backref=db.backref('links', lazy=True))
 
@@ -45,6 +53,7 @@ class Venda(db.Model):
     parceiro_id = db.Column(db.Integer, db.ForeignKey('parceiros_config.id'), nullable=False)
     pedido_id_nuvemshop = db.Column(db.String(100), unique=True, nullable=False)
     produtos_resumo = db.Column(db.String(500), default="Produtos Diversos")
+    foto_produto_url = db.Column(db.String(500), nullable=True) # Imagem do produto
     valor_total = db.Column(db.Float, nullable=False)
     valor_comissao = db.Column(db.Float, nullable=False)
     data_venda = db.Column(db.DateTime, default=fuso_sao_paulo)

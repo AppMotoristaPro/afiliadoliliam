@@ -5,6 +5,7 @@ from ..extensions import db
 from datetime import datetime
 import random
 import string
+import re
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -26,25 +27,45 @@ def login():
         
     return render_template('admin/login.html')
 
+# Endpoint atualizado para o Onboarding Completo (Etapas)
 @admin_bp.route('/nova-senha', methods=['GET', 'POST'])
 @login_required
 def nova_senha():
     if not getattr(current_user, 'senha_temporaria', False): 
         return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
         
+    config = current_user.configuracao
+        
     if request.method == 'POST':
         nova_senha = request.form.get('nova_senha')
-        if nova_senha != request.form.get('confirmacao'):
+        confirmacao = request.form.get('confirmacao')
+        
+        # O Backend também valida a senha (além do JS no frontend)
+        if len(nova_senha) < 8 or not re.search(r'[A-Z]', nova_senha) or not re.search(r'\d', nova_senha):
+            flash('A senha não atende aos requisitos de segurança.')
+            return render_template('admin/nova_senha.html', config=config)
+            
+        if nova_senha != confirmacao:
             flash('As senhas não coincidem.')
-            return render_template('admin/nova_senha.html')
+            return render_template('admin/nova_senha.html', config=config)
+            
+        # Atualização de Todos os Dados do Onboarding
+        config.nome = request.form.get('nome')
+        config.cpf = request.form.get('cpf')
+        config.data_nascimento = request.form.get('data_nascimento')
+        config.chave_pix = request.form.get('chave_pix')
+        config.cep = request.form.get('cep')
+        
+        endereco_completo = f"{request.form.get('logradouro')}, {request.form.get('numero')} - {request.form.get('bairro')}, {request.form.get('cidade')}"
+        config.endereco = endereco_completo
             
         current_user.set_senha(nova_senha)
         current_user.senha_temporaria = False
         db.session.commit()
-        flash('Senha atualizada com sucesso. Bem-vindo(a)!')
-        return redirect(url_for('admin.dashboard') if current_user.role == 'admin' else url_for('parceiros.dashboard'))
+        flash('Cadastro finalizado com sucesso! Bem-vinda à Ellic.')
+        return redirect(url_for('parceiros.dashboard'))
         
-    return render_template('admin/nova_senha.html')
+    return render_template('admin/nova_senha.html', config=config)
 
 @admin_bp.route('/logout')
 @login_required
@@ -79,9 +100,14 @@ def dashboard():
         d = v.data_venda.strftime('%d/%m')
         vendas_diarias[d] = vendas_diarias.get(d, 0) + v.valor_total
         
-    return render_template('admin/dashboard.html', fat_total=fat_total, com_total=com_total, 
-                           tot_afiliados=tot_afiliados, labels_grafico=list(vendas_diarias.keys()), 
-                           valores_grafico=list(vendas_diarias.values()), dia=dia, mes=mes)
+    return render_template(
+        'admin/dashboard.html', 
+        fat_total=fat_total, com_total=com_total, 
+        tot_afiliados=tot_afiliados, 
+        labels_grafico=list(vendas_diarias.keys()), 
+        valores_grafico=list(vendas_diarias.values()), 
+        dia=dia, mes=mes
+    )
 
 @admin_bp.route('/afiliados', methods=['GET', 'POST'])
 @login_required
@@ -102,52 +128,29 @@ def afiliados():
         db.session.flush()
         
         utm = f"ELLIC-{random.randint(1000, 9999)}"
-        config = ParceiroConfig(usuario_id=novo_user.id, nome=request.form.get('nome'), 
-                                codigo_utm=utm, taxa_comissao=float(request.form.get('taxa', 10.0)),
-                                chave_pix=request.form.get('chave_pix'), celular=request.form.get('celular'))
+        # Admin preenche apenas o básico. O afiliado faz o resto no Onboarding.
+        config = ParceiroConfig(
+            usuario_id=novo_user.id, 
+            nome=request.form.get('nome'), 
+            cpf=request.form.get('cpf'),
+            codigo_utm=utm, 
+            taxa_comissao=float(request.form.get('taxa', 10.0))
+        )
         db.session.add(config)
         db.session.commit()
-        flash(f'Afiliado criado! ID Afiliado: {utm} | Senha provisória: {senha_temp}')
+        flash(f'Acesso Liberado! E-mail: {email} | Senha provisória: {senha_temp}')
         return redirect(url_for('admin.afiliados'))
         
     lista = ParceiroConfig.query.all()
     return render_template('admin/afiliados.html', afiliados=lista)
 
-@admin_bp.route('/afiliado/<int:id>/editar', methods=['POST'])
-@login_required
-def editar_afiliado(id):
-    if current_user.role != 'admin': 
-        return redirect(url_for('parceiros.dashboard'))
-        
-    parceiro = ParceiroConfig.query.get_or_404(id)
-    novo_email = request.form.get('email')
-    
-    if novo_email != parceiro.usuario.email and not Usuario.query.filter_by(email=novo_email).first():
-        parceiro.usuario.email = novo_email
-        
-    parceiro.celular = request.form.get('celular')
-    parceiro.chave_pix = request.form.get('chave_pix')
-    
-    if request.form.get('resetar_senha'):
-        senha_temp = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-        parceiro.usuario.set_senha(senha_temp)
-        parceiro.usuario.senha_temporaria = True
-        flash(f'Senha resetada para: {senha_temp}')
-        
-    db.session.commit()
-    return redirect(url_for('admin.afiliados'))
-
-# ----- NOVA ROTA: HISTÓRICO GLOBAL DE VENDAS -----
 @admin_bp.route('/vendas')
 @login_required
 def vendas():
     if current_user.role != 'admin': 
         return redirect(url_for('parceiros.dashboard'))
-        
-    # Puxa todas as vendas já realizadas no sistema, da mais recente para a mais antiga
     todas_vendas = Venda.query.order_by(Venda.data_venda.desc()).all()
     return render_template('admin/vendas.html', vendas=todas_vendas)
-# --------------------------------------------------
 
 @admin_bp.route('/financeiro')
 @login_required
@@ -166,7 +169,7 @@ def financeiro():
         dados[v.parceiro_id]['extrato'].append({
             'data_venda': v.data_venda.strftime('%Y-%m-%dT%H:%M:%S'),
             'pedido_id_nuvemshop': v.pedido_id_nuvemshop,
-            'produtos_resumo': str(v.produtos_resumo) if v.produtos_resumo else "Produtos Diversos",
+            'produtos_resumo': str(v.produtos_resumo),
             'valor_total': float(v.valor_total),
             'valor_comissao': float(v.valor_comissao)
         })
@@ -182,23 +185,18 @@ def pagar_comissao(id):
         
     vendas_pendentes = Venda.query.filter_by(parceiro_id=id, status_pagamento='pendente').all()
     if not vendas_pendentes:
-        flash('Nenhum valor pendente encontrado.')
         return redirect(url_for('admin.financeiro'))
         
     parceiro = ParceiroConfig.query.get_or_404(id)
     total_comissao = sum(v.valor_comissao for v in vendas_pendentes)
     
-    recibo = Pagamento(
-        parceiro_id=parceiro.id,
-        valor_pago=total_comissao,
-        chave_pix_utilizada=parceiro.chave_pix or 'Não Informada'
-    )
+    recibo = Pagamento(parceiro_id=parceiro.id, valor_pago=total_comissao, chave_pix_utilizada=parceiro.chave_pix or 'Não Informada')
     db.session.add(recibo)
     
     for v in vendas_pendentes:
         v.status_pagamento = 'pago'
         
     db.session.commit()
-    flash(f'Sucesso! Repasse de R$ {total_comissao:.2f} arquivado no histórico de {parceiro.nome}.')
+    flash(f'Repasse liquidado com sucesso.')
     return redirect(url_for('admin.financeiro'))
 

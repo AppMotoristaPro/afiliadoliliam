@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>{% block title %}Ellic | App{% endblock %}</title>
+    <title>{% block title %}Ellic | Premium{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -19,49 +17,69 @@
       }
     </script>
     <style>
-        /* Efeito Vidro iOS */
-        .glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); }
-        .glass-nav { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.05); }
-        
-        /* Oculta scrollbars nativas mas permite rolagem */
+        body { background-color: #FAFBFC; padding-bottom: env(safe-area-inset-bottom); }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid #E5E7EB; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Suavização de interações mobile */
         * { -webkit-tap-highlight-color: transparent; }
-        body { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="bg-[#F2F2F7] min-h-screen text-gray-900 font-sans tracking-wide antialiased">
+<body class="text-gray-900 font-sans tracking-wide antialiased">
     
     {% if current_user.is_authenticated and not current_user.senha_temporaria %}
     <nav class="bg-navy shadow-lg sticky top-0 z-40 hidden md:block">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <a href="#" class="text-xl font-bold text-gold tracking-widest uppercase">ELLIC</a>
-                <div class="flex space-x-6 items-center text-sm font-medium">
-                    {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition">Visão Geral</a>
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-gold tracking-widest uppercase">ELLIC</a>
+            <div class="flex space-x-6 items-center text-sm font-bold">
+                {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="text-white hover:text-gold transition">Dashboard</a>
                     <a href="{{ url_for('admin.afiliados') }}" class="text-white hover:text-gold transition">Afiliados</a>
                     <a href="{{ url_for('admin.vendas') }}" class="text-white hover:text-gold transition">Vendas</a>
                     <a href="{{ url_for('admin.financeiro') }}" class="text-white hover:text-gold transition">Financeiro</a>
-                    {% else %}
-                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Visão Estratégica</a>
+                {% else %}
+                    <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Painel</a>
                     <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition">Links</a>
-                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Extrato</a>
-                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition">Recebimentos</a>
-                    {% endif %}
-                    <a href="{{ url_for('admin.logout') }}" class="border border-gold text-gold hover:bg-gold hover:text-navy px-4 py-1.5 rounded-full transition ml-2">Sair</a>
-                </div>
+                    <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Vendas</a>
+                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition">Pix</a>
+                {% endif %}
+                <button onclick="toggleDrawer(true)" class="text-white text-2xl font-bold transition hover:text-gold">☰</button>
             </div>
         </div>
     </nav>
     {% endif %}
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 md:pb-10 overflow-x-hidden">
+    <div id="drawerMenu" class="fixed inset-0 z-50 hidden">
+        <div onclick="toggleDrawer(false)" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-y-0 right-0 w-72 bg-white shadow-2xl flex flex-col justify-between p-6 transform transition-transform duration-300">
+            <div>
+                <div class="flex justify-between items-center mb-8 border-b border-gray-50 pb-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Menu</h3>
+                    <button onclick="toggleDrawer(false)" class="text-gray-400 text-2xl font-light">&times;</button>
+                </div>
+                
+                {% if current_user.is_authenticated and current_user.role == 'parceiro' %}
+                <div class="flex items-center space-x-4 mb-8 bg-gray-50 p-4 rounded-2xl">
+                    <div class="w-12 h-12 rounded-full bg-navy text-gold font-bold text-lg flex items-center justify-center">
+                        {{ current_user.configuracao.nome[0]|upper if current_user.configuracao else 'E' }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-bold text-navy truncate">{{ current_user.configuracao.nome if current_user.configuracao else 'Afiliado' }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('parceiros.perfil') }}" class="block py-3 text-navy font-bold text-sm bg-gray-50 rounded-xl px-4 text-center">Meus Dados</a>
+                {% endif %}
+            </div>
+            <div class="border-t border-gray-100 pt-4">
+                <a href="{{ url_for('admin.logout') }}" class="w-full bg-red-50 text-red-600 font-bold py-3.5 rounded-xl flex items-center justify-center text-sm">Sair da Conta</a>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto px-4 pt-8 pb-24 md:pb-10">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="bg-white border-l-4 border-navy text-navy p-4 mb-6 rounded-2xl shadow-ios font-medium text-sm animate-pulse">
+                <div class="bg-white border-l-4 border-navy text-navy p-4 mb-6 rounded-2xl shadow-ios font-bold text-sm">
                     {{ messages[0] }}
                 </div>
             {% endif %}
@@ -70,31 +88,33 @@
     </main>
 
     {% if current_user.is_authenticated and current_user.role == 'parceiro' and not current_user.senha_temporaria %}
-    <div class="fixed bottom-0 left-0 w-full glass-nav pb-[env(safe-area-inset-bottom)] z-50 md:hidden">
-        <div class="flex justify-around items-center h-16 px-2">
-            <a href="{{ url_for('parceiros.dashboard') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.dashboard' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="text-[10px] font-semibold">Painel</span>
+    <div class="fixed bottom-0 left-0 w-full glass-nav pb-[env(safe-area-inset-bottom)] z-40 md:hidden">
+        <div class="flex justify-around items-center h-16">
+            <a href="{{ url_for('parceiros.dashboard') }}" class="flex flex-col items-center justify-center w-full h-full {% if request.endpoint == 'parceiros.dashboard' %}text-navy{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-bold">Painel</span>
             </a>
-            <a href="{{ url_for('parceiros.links') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.links' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                <span class="text-[10px] font-semibold">Links</span>
+            <a href="{{ url_for('parceiros.links') }}" class="flex flex-col items-center justify-center w-full h-full {% if request.endpoint == 'parceiros.links' %}text-navy{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <span class="text-[10px] font-bold">Links</span>
             </a>
-            <a href="{{ url_for('parceiros.vendas') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.vendas' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span class="text-[10px] font-semibold">Vendas</span>
+            <a href="{{ url_for('parceiros.vendas') }}" class="flex flex-col items-center justify-center w-full h-full {% if request.endpoint == 'parceiros.vendas' %}text-navy{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="text-[10px] font-bold">Vendas</span>
             </a>
-            <a href="{{ url_for('parceiros.recebimentos') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.endpoint == 'parceiros.recebimentos' %}text-navy{% else %}text-gray-400 hover:text-gray-600{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                <span class="text-[10px] font-semibold">Pix</span>
-            </a>
-            <a href="{{ url_for('admin.logout') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-red-400 hover:text-red-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                <span class="text-[10px] font-semibold">Sair</span>
-            </a>
+            <button onclick="toggleDrawer(true)" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-navy">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <span class="text-[10px] font-bold">Menu</span>
+            </button>
         </div>
     </div>
     {% endif %}
+
+    <script>
+        function toggleDrawer(open) {
+            document.getElementById('drawerMenu').classList.toggle('hidden', !open);
+        }
+    </script>
 </body>
 </html>
 
