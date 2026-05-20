@@ -41,7 +41,6 @@
                     <a href="{{ url_for('parceiros.dashboard') }}" class="text-white hover:text-gold transition">Painel</a>
                     <a href="{{ url_for('parceiros.links') }}" class="text-white hover:text-gold transition">Links</a>
                     <a href="{{ url_for('parceiros.vendas') }}" class="text-white hover:text-gold transition">Vendas</a>
-                    <a href="{{ url_for('parceiros.recebimentos') }}" class="text-white hover:text-gold transition">Pix</a>
                 {% endif %}
                 <button onclick="toggleDrawer(true)" class="text-white text-2xl font-bold transition hover:text-gold">☰</button>
             </div>
@@ -67,11 +66,15 @@
                         <p class="text-sm font-bold text-navy truncate">{{ current_user.configuracao.nome if current_user.configuracao else 'Afiliado' }}</p>
                     </div>
                 </div>
-                <a href="{{ url_for('parceiros.perfil') }}" class="block py-3 text-navy font-bold text-sm bg-gray-50 rounded-xl px-4 text-center">Meus Dados</a>
+                
+                <div class="space-y-3">
+                    <a href="{{ url_for('parceiros.perfil') }}" class="block py-3 text-navy font-bold text-sm bg-gray-50 hover:bg-gray-100 transition rounded-xl px-4 text-center">Meus Dados</a>
+                    <a href="{{ url_for('parceiros.recebimentos') }}" class="block py-3 text-navy font-bold text-sm bg-gray-50 hover:bg-gray-100 transition rounded-xl px-4 text-center">Recebimentos PIX</a>
+                </div>
                 {% endif %}
             </div>
             <div class="border-t border-gray-100 pt-4">
-                <a href="{{ url_for('admin.logout') }}" class="w-full bg-red-50 text-red-600 font-bold py-3.5 rounded-xl flex items-center justify-center text-sm">Sair da Conta</a>
+                <a href="{{ url_for('admin.logout') }}" class="w-full bg-red-50 hover:bg-red-100 transition text-red-600 font-bold py-3.5 rounded-xl flex items-center justify-center text-sm">Sair da Conta</a>
             </div>
         </div>
     </div>
